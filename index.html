@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MetaMask Connect</title>
+</head>
+<body>
+  <h1>MetaMask Connection</h1>
+  <button onclick="connect()">Connect Wallet</button><br/><br/>
+
+  <label for="to">Who should get ETH?</label>
+  <input type="text" id="to" name="to">
+  <button onclick="transaction()">Make a transaction</button><br/><br/>
+  
+  <script>
+    /*
+    this function allows users to connect to their metamask wallet only if
+    such extension is installed
+    */
+    async function connect() {
+      if (typeof window.ethereum !== 'undefined') {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          //for debugging, print on console and screen the public address of wallet
+          alert('Connected: ' + accounts[0]);
+          console.log('Connected: ' + accounts[0]);
+        } catch (err) {
+          alert('Connection denied');
+        }
+      } else {
+        alert('MetaMask not found. Please install it.');
+      }
+    }
+    
+    /*
+    this function allows to make a transaction to the given wallet
+    in the case the address is not valid, an error will be generated
+    */
+    async function transaction() {
+      if (typeof window.ethereum === 'undefined') {
+        alert('MetaMask is not installed');
+        return;
+      }
+
+      // if the user is already authenticated, it will be "skipped"
+      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+      const sender = accounts[0];
+
+      const tx = {
+        from: sender,
+        to: document.getElementById("to").value,
+        value: '0x2386F26FC10000', // 0.01 ETH in wei (hex)
+      };
+
+      try {
+        const txHash = await ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [tx],
+        });
+        alert('Transaction sent! Hash: ' + txHash);
+      } catch (err) {
+        console.error(err);
+        alert('Transaction failed: ' + err.message);
+      }
+    }
+  </script>
+</body>
+</html>
