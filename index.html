@@ -7,59 +7,138 @@
   <h1>MetaMask Connection</h1>
   <button onclick="connect()">Connect Wallet</button><br/><br/>
 
-  <label for="to">Who should get ETH?</label>
+  <label for="to">Send 0.01 ETH to:</label>
   <input type="text" id="to" name="to">
-  <button onclick="transaction()">Make a transaction</button><br/><br/>
+  <button onclick="sendTransaction()">Send Transaction</button><br/><br/>
+
+  <label for="hash">Get Transaction Info by Hash:</label>
+  <input type="text" id="hash" name="hash">
+  <button onclick="getTransactionInfo()">Fetch Info</button><br/><br/>
   
+  <h1>Contract Interaction</h1>
+  <button onclick="incrementCounter()">Increment Counter</button>
+  <p id="result"></p>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script>
+
     /*
     this function allows users to connect to their metamask wallet only if
     such extension is installed
     */
     async function connect() {
-      if (typeof window.ethereum !== 'undefined') {
-        try {
-          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-          //for debugging, print on console and screen the public address of wallet
-          alert('Connected: ' + accounts[0]);
-          console.log('Connected: ' + accounts[0]);
-        } catch (err) {
-          alert('Connection denied');
-        }
-      } else {
+      if (!window.ethereum) {
         alert('MetaMask not found. Please install it.');
+        return;
+      }
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        alert('Connected: ' + accounts[0]);
+        console.log('Connected:', accounts[0]);
+      } catch {
+        alert('Connection denied');
       }
     }
-    
+
     /*
     this function allows to make a transaction to the given wallet
     in the case the address is not valid, an error will be generated
     */
-    async function transaction() {
-      if (typeof window.ethereum === 'undefined') {
+    async function sendTransaction() {
+      if (!window.ethereum) {
         alert('MetaMask is not installed');
         return;
       }
-
-      // if the user is already authenticated, it will be "skipped"
-      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-      const sender = accounts[0];
-
-      const tx = {
-        from: sender,
-        to: document.getElementById("to").value,
-        value: '0x2386F26FC10000', // 0.01 ETH in wei (hex)
-      };
-
       try {
-        const txHash = await ethereum.request({
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const tx = {
+          from: accounts[0],
+          to: document.getElementById("to").value,
+          value: '0x2386F26FC10000' // 0.01 ETH in wei (hex)
+        };
+        const txHash = await window.ethereum.request({
           method: 'eth_sendTransaction',
           params: [tx],
         });
         alert('Transaction sent! Hash: ' + txHash);
       } catch (err) {
-        console.error(err);
         alert('Transaction failed: ' + err.message);
+        console.error(err);
+      }
+    }
+
+    async function getTransactionInfo() {
+      if (!window.ethereum) {
+        alert('MetaMask is not installed');
+        return;
+      }
+      const hash = document.getElementById("hash").value.trim();
+      if (!hash) {
+        alert('Please enter a transaction hash');
+        return;
+      }
+      try {
+        const info = await window.ethereum.request({
+          method: 'eth_getTransactionByHash',
+          params: [hash]
+        });
+        alert(`Transaction info:\n${JSON.stringify(info, null, 2)}`);
+        console.log(info);
+      } catch (err) {
+        alert('Failed to fetch transaction info: ' + err.message);
+        console.error(err);
+      }
+    }
+
+    // the following constant defines the deployed contract Counter
+    const contractAddress = "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707";
+    const contractABI = [
+      {
+        "inputs": [],
+        "name": "count",
+        "outputs": [{"internalType": "uint256","name": "","type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "get",
+        "outputs": [{"internalType": "uint256","name": "","type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "increment",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }
+    ];
+
+    /*
+    the function calls two of the contract functions, one to increment the counter
+    will ultimately will start a transaction procedure and one to retrieve the latest
+    counter value
+    */
+    async function incrementCounter() {
+      if (!window.ethereum) {
+        alert('MetaMask is not installed');
+        return;
+      }
+      try {
+        // create an ethers.js provider using the injected MetaMask provider
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        // create a contract instance with the contract address, ABI, and signer
+        const contract = new ethers.Contract(contractAddress, contractABI, signer);
+        
+        await contract.increment();
+        const count = await contract.get();
+        document.getElementById('result').innerText = "Count is: " + count.toString();
+      } catch (err) {
+        alert("Error calling contract: " + err.message);
+        console.error(err);
       }
     }
   </script>

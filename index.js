@@ -30,6 +30,10 @@ async function test() {
       console.log(`Balance of ${accounts[0]}:`, web3.utils.fromWei(balance, 'ether'), 'ETH');
     }
 
+    //create a new account (new private key and address)
+    const account = web3.eth.accounts.create();
+    console.log(account);
+
   } catch (error) {
     console.error('Error:', error);
   }
