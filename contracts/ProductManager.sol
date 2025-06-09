@@ -1,0 +1,109 @@
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.30;
+
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+
+contract ProductManager is Ownable {
+
+    mapping(address => bool) public authorizedUsers;
+
+    modifier onlyAuthorized() {
+        require(authorizedUsers[msg.sender], "Not authorized to use this function");
+        _;
+    }
+
+    function setUserAuth(address wallet, bool authorized) external onlyOwner {
+        authorizedUsers[wallet] = authorized;
+    }
+
+    struct DPP {
+
+        string productIdentification;
+        string materials;
+        // TODO: Aggiungere altri dati del DPP
+
+    }
+
+    mapping (uint256 => DPP) public products;
+    uint256[] public products_ids;
+
+    constructor () Ownable(msg.sender) {}
+    
+    function createProduct (uint256 productId, DPP calldata dpp) external onlyAuthorized {
+
+        require(bytes(products[productId].productIdentification).length == 0, "Product already exists");
+        products[productId] = dpp;
+        products_ids.push(productId);
+
+    }
+
+    function removeProduct (uint256 productId) external onlyAuthorized {
+
+        delete products[productId];
+        for (uint256 i = 0; i < products_ids.length; i++) {
+            if (products_ids[i] == productId){
+                products_ids[i] = products_ids[products_ids.length - 1];
+                products_ids.pop();
+                return; 
+            }
+        }
+        
+        revert("Product not found");
+
+    }
+
+    function getProduct (uint256 productId) external view returns (DPP memory) {
+
+        return products[productId];
+
+    }
+
+    struct LotDetails {
+
+        string expirationDate;
+        uint256 totalQuantity;
+        uint256 productId;
+
+    }
+
+    mapping (uint256 => LotDetails) public lots;
+    uint256[] public lots_ids;
+
+    function createLot(uint256 lotId, LotDetails calldata lotDetails) external onlyAuthorized {
+
+        require(bytes(lots[lotId].expirationDate).length == 0, "Lot already exists");
+        require(bytes(products[lotDetails.productId].productIdentification).length != 0, "Product does not exist");
+
+        lots[lotId] = lotDetails;
+        lots_ids.push(lotId);
+
+    }
+
+    function removeLot (uint256 lotId) external onlyAuthorized {
+        
+        delete lots[lotId];
+        for (uint256 i = 0; i < lots_ids.length; i++) {
+            if (lots_ids[i] == lotId){
+                lots_ids[i] = lots_ids[lots_ids.length - 1];
+                lots_ids.pop();
+                return; 
+            }
+        }
+        
+        revert("Lot not found");
+
+    }
+
+    function getLot (uint256 lotId) external view returns (LotDetails memory) {
+
+        return lots[lotId];
+
+    }
+
+}
+
+/* TODO: 
+    Vogliamo aggiungere degli eventi dopo le varie azioni (es: ProductCreated, LotCreated...) ??
+    Controllare parte di sicurezza: Chi può chiamare le funzioni ??
+*/
+
