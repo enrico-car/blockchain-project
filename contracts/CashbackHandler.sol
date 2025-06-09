@@ -15,7 +15,7 @@ contract CashbackHandler {
     }
 
     // TODO: lo rendiamo parametrico?? Es: riscatto 200 token al posto dei 100 fissi
-    function redeem_cashback () external {
+    function redeemCashback () external {
 
         // Check if contract is allowed to spend
         require(cashbackToken.allowance(msg.sender, address(this)) >= MIN_CASHBACK_AMOUNT, 
