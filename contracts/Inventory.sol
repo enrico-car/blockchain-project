@@ -73,6 +73,20 @@ contract InventoryManager is Ownable {
         
     }
 
+    function getMyInventory() external view returns (uint256[] memory lotIds, uint256[] memory quantities) {
+
+        uint256[] memory lots = ownedLots[msg.sender];
+        uint256 length = lots.length;
+
+        quantities = new uint256[](length);
+        for (uint256 i = 0; i < length; i++){
+            quantities[i] = inventory[msg.sender][lots[i]];
+        }
+
+        return (lots, quantities);
+        
+    }
+
     function hasSufficientInventory(address account, uint256[] calldata lotIds, uint256[] calldata quantities) external view {
 
         require((lotIds.length == quantities.length), "Arrays size must match");    // Check if arrays' length are equals
@@ -100,6 +114,5 @@ contract InventoryManager is Ownable {
     Aggiungere controlli di sicurezza: Chi può chiamare le funzioni? Metterei solo il contratto che gestisce le transazioni 
         + tecnici/produttore (per eventuali problemi)
     Aggiungiamo degli eventi ??
-    Funzione getMyInventory() per mostrare all'utente il suo inventario? 
-        getInventory è solo per gli autorizzati, in modo da evitare che altre persone sappiano direttamente cosa ho nel mio inventario
+    Gesitre creazione di prodotti da parte dell'azienda produttrice
 */ 
