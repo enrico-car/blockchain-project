@@ -117,4 +117,31 @@ contract TransactionManager is Ownable {
 
 }
 
-// TODO: Aggiungiamo degli eventi?? 
+/* TODO: 
+    Aggiungiamo degli eventi?? 
+    Come gestiamo il minting da parte dell'azienda ??
+    Come gestiamo il timestamp della transazione nell'hash ?? Utile una funzione getIncomingTransaction ??
+*/
+
+/*
+
+    Complete Workflow:
+    1 - Deploy CashbackToken
+    2 - Deploy CashbackHandler, using the CashbackToken address as parameter in the constructor
+    3 - Give burn authorization to CashbackHandler in the CashbackToken contract --> Can burn tokens
+    4 - Deploy ProductManager
+    5 - Deploy InventoryManager, using the ProductManager address as parameter in the constructor
+    6 - Deploy TransactionManager, using the InventoryManager and CashbackToken addresses as parameters in the constructor
+    7 - Give authorization to a Wallet in the ProductManager contract --> Can create products and lots
+    8 - Create some products on the ProductManager: 1, ["Prod1", "Material"]
+    9 - Create some lots on the ProductManager: 1, ["01/01/0001", 10000, 1]
+    10 - (Temporary) Grant authorization to a user in the InventoryManager and Add to a user's inventory some items: walletAddrA, 1, 10
+        TODO: Da rivedere il modo in cui mintiamo i prodotti dall'azienda produttrice
+    11 - Give mint authorization to the TransactionManager in the CashbackToken contract --> Can mint tokens
+    12 - Give authorization to the TransactionManager in the InventoryManager contract --> Can operate on users' wallets
+    13 - Propose a tranfer between two wallets: walletAddrB, [1], [5]
+    14 - Accept proposed transaction (using walletB): walletAddrA
+        Note: Use pendingTransaction to retrieve detailsHash
+    15 - Verify changes in walletB's inventory
+
+*/
