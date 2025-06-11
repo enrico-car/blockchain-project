@@ -7,7 +7,7 @@ contract ProductManager is Ownable {
 
     mapping(address => bool) public authorizedUsers;
 
-    modifier onlyAuthorized() {
+    modifier onlyAuthorized() {                  // Modifier used as AccessControlList
         require(authorizedUsers[msg.sender], "Not authorized to use this function");
         _;
     }
@@ -25,35 +25,36 @@ contract ProductManager is Ownable {
     }
 
     mapping (uint256 => DPP) public products;
-    uint256[] public products_ids;
+    uint256[] public productsIds;
 
     constructor () Ownable(msg.sender) {}
     
     function createProduct (uint256 productId, DPP calldata dpp) external onlyAuthorized {
 
-        require(bytes(products[productId].productIdentification).length == 0, "Product already exists");
-        products[productId] = dpp;
-        products_ids.push(productId);
+        require(bytes(products[productId].productIdentification).length == 0, "Product already exists");    // Check if product already exists
+        products[productId] = dpp;      // Add the new product
+        productsIds.push(productId);
 
     }
 
     function removeProduct (uint256 productId) external onlyAuthorized {
 
-        delete products[productId];
-        for (uint256 i = 0; i < products_ids.length; i++) {
-            if (products_ids[i] == productId){
-                products_ids[i] = products_ids[products_ids.length - 1];
-                products_ids.pop();
+        delete products[productId];     // Remove DPP struct
+        for (uint256 i = 0; i < productsIds.length; i++) {     // Remove product id, shrink array
+            if (productsIds[i] == productId){
+                productsIds[i] = productsIds[productsIds.length - 1];
+                productsIds.pop();
                 return; 
             }
         }
         
-        revert("Product not found");
+        revert("Product not found");    // Reverts if product doesnt exist
 
     }
 
     function getProduct (uint256 productId) external view returns (DPP memory) {
 
+        require(bytes(products[productId].productIdentification).length != 0, "Product does not exists");   // Check if product exists
         return products[productId];
 
     }
@@ -71,18 +72,18 @@ contract ProductManager is Ownable {
 
     function createLot(uint256 lotId, LotDetails calldata lotDetails) external onlyAuthorized {
 
-        require(bytes(lots[lotId].expirationDate).length == 0, "Lot already exists");
-        require(bytes(products[lotDetails.productId].productIdentification).length != 0, "Product does not exist");
+        require(bytes(lots[lotId].expirationDate).length == 0, "Lot already exists");   // Check if lot already exists
+        require(bytes(products[lotDetails.productId].productIdentification).length != 0, "Product does not exists"); // Check if product exists
 
-        lots[lotId] = lotDetails;
+        lots[lotId] = lotDetails;   // Add the new lot
         lots_ids.push(lotId);
 
     }
 
     function removeLot (uint256 lotId) external onlyAuthorized {
         
-        delete lots[lotId];
-        for (uint256 i = 0; i < lots_ids.length; i++) {
+        delete lots[lotId];     // Remove LotDetials struct
+        for (uint256 i = 0; i < lots_ids.length; i++) {     // Remove lot id, shrink array
             if (lots_ids[i] == lotId){
                 lots_ids[i] = lots_ids[lots_ids.length - 1];
                 lots_ids.pop();
@@ -90,12 +91,13 @@ contract ProductManager is Ownable {
             }
         }
         
-        revert("Lot not found");
+        revert("Lot not found");    // Reverts if lot doesnt exist
 
     }
 
     function getLot (uint256 lotId) external view returns (LotDetails memory) {
 
+        require(bytes(lots[lotId].expirationDate).length != 0, "Lot does not exists");  // Check if lot exists
         return lots[lotId];
 
     }
@@ -104,6 +106,6 @@ contract ProductManager is Ownable {
 
 /* TODO: 
     Vogliamo aggiungere degli eventi dopo le varie azioni (es: ProductCreated, LotCreated...) ??
-    Controllare parte di sicurezza: Chi può chiamare le funzioni ??
+    Controllare parte di sicurezza: Chi può chiamare le funzioni ?? Lasciamo la lettura pubblica ??  
 */
 
