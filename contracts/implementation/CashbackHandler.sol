@@ -1,20 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.30;
 
-import {CashbackToken} from "./CashbackToken.sol";
+import {CashbackToken} from "contracts/tokens/CashbackToken.sol";
 
 contract CashbackHandler {
     
     CashbackToken public cashbackToken;
-    uint256 public constant MIN_CASHBACK_AMOUNT = 100 * 10**18;
-
-    event CashbackRedeemed ( address indexed user, uint256 amount);
 
     constructor (address cashbackTokenAddress) {
         cashbackToken = CashbackToken(cashbackTokenAddress);
     }
 
-    // TODO: lo rendiamo parametrico?? Es: riscatto 200 token al posto dei 100 fissi
+    event CashbackRedeemed ( address indexed user, uint256 amount );
+
+    uint256 public constant MIN_CASHBACK_AMOUNT = 100 * 10**18;
+
+    // Magari possiamo lasciare questo come base e avere una nuova versione parametrica, 
+    //      da usare come esempio di implementazione V2 da mostrare con il Proxy
     function redeemCashback () external {
 
         // Check if contract is allowed to spend

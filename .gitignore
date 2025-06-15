@@ -5,6 +5,7 @@
 # Remix plugin state folders
 .deps/
 .states/
+.deploys/
 
 # Debug info
 *.dbg.json

@@ -28,12 +28,19 @@ contract ProductManager is Ownable {
     uint256[] public productsIds;
 
     constructor () Ownable(msg.sender) {}
+
+    event ProductCreated ( uint256 indexed productId, DPP dpp );
+    event ProductRemoved ( uint256 indexed productId );
+    event LotCreated ( uint256 indexed lotId, uint256 indexed productId, LotDetails lotdetails );
+    event LotRemoved ( uint256 indexed lotId );
     
     function createProduct (uint256 productId, DPP calldata dpp) external onlyAuthorized {
 
         require(bytes(products[productId].productIdentification).length == 0, "Product already exists");    // Check if product already exists
         products[productId] = dpp;      // Add the new product
         productsIds.push(productId);
+
+        emit ProductCreated(productId, dpp);
 
     }
 
@@ -44,6 +51,8 @@ contract ProductManager is Ownable {
             if (productsIds[i] == productId){
                 productsIds[i] = productsIds[productsIds.length - 1];
                 productsIds.pop();
+
+                emit ProductRemoved(productId);
                 return; 
             }
         }
@@ -63,6 +72,7 @@ contract ProductManager is Ownable {
 
         string expirationDate;
         uint256 totalQuantity;
+        uint256 unitPrice;      // Note: 2 decimal points (es: unitPrice = 1000 means 10 $)
         uint256 productId;
 
     }
@@ -78,6 +88,8 @@ contract ProductManager is Ownable {
         lots[lotId] = lotDetails;   // Add the new lot
         lots_ids.push(lotId);
 
+        emit LotCreated(lotId, lotDetails.productId, lotDetails);
+
     }
 
     function removeLot (uint256 lotId) external onlyAuthorized {
@@ -87,6 +99,8 @@ contract ProductManager is Ownable {
             if (lots_ids[i] == lotId){
                 lots_ids[i] = lots_ids[lots_ids.length - 1];
                 lots_ids.pop();
+
+                emit LotRemoved(lotId);
                 return; 
             }
         }
@@ -105,7 +119,6 @@ contract ProductManager is Ownable {
 }
 
 /* TODO: 
-    Vogliamo aggiungere degli eventi dopo le varie azioni (es: ProductCreated, LotCreated...) ??
     Controllare parte di sicurezza: Chi può chiamare le funzioni ?? Lasciamo la lettura pubblica ??  
 */
 

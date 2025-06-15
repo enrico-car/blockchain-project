@@ -24,6 +24,19 @@ contract InventoryManager is Ownable {
         authorizedUsers[wallet] = authorized;
     }
 
+    mapping(address => bool) public manufacturerUsers;
+
+    modifier onlyManufacturer() {     // Modifier used as AccessControlList for functions
+        require(manufacturerUsers[msg.sender], "Only the manufacturer is allowed to use this function");
+        _;
+    }
+
+    function setManufacturerAuth(address wallet, bool authorized) external onlyOwner {
+        manufacturerUsers[wallet] = authorized;
+    }
+
+    event AddedToManufacturerInventory ( address indexed manufacturer, uint256 indexed lotId, uint256 quantity );
+
     mapping (address => mapping(uint256 => uint256)) inventory;     // Wallet --> ( lot_id --> qty )
     mapping (address => uint256[]) ownedLots;                       // Wallet --> lista lotti in suo possesso
 
@@ -36,6 +49,20 @@ contract InventoryManager is Ownable {
             ownedLots[account].push(lotId);
         }
         inventory[account][lotId] += quantity;      // Increase account's quantity
+
+    }
+
+    // Function used only from the manufacturer to add products to its own inventory
+    function addToManufacturerInventory(uint256 lotId, uint256 quantity) external onlyManufacturer {
+
+        require(productManager.getLot(lotId).totalQuantity != 0, "Lot doesn't exists");  // Check if lot exists
+
+        if (inventory[msg.sender][lotId] == 0){        // If i don't own any unit of the product, i also need to add it to ownedLots
+            ownedLots[msg.sender].push(lotId);
+        }
+        inventory[msg.sender][lotId] += quantity;      // Increase account's quantity
+
+        emit AddedToManufacturerInventory(msg.sender, lotId, quantity);
 
     }
 
@@ -113,6 +140,4 @@ contract InventoryManager is Ownable {
 /* TODO: 
     Aggiungere controlli di sicurezza: Chi può chiamare le funzioni? Metterei solo il contratto che gestisce le transazioni 
         + tecnici/produttore (per eventuali problemi)
-    Aggiungiamo degli eventi ??
-    Gesitre creazione di prodotti da parte dell'azienda produttrice
 */ 
