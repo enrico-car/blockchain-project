@@ -69,5 +69,5 @@ node server.js
 ```
 and visit the web page at `http://localhost:3000`
 
-## Possible errors
-In the case it is not possible to use the smart contract from the web page, probably it hasn't been deployed or the addres / ABI has been changed with the latest deploymeny. In this case, check if the new address is the same as the one present in the server.js and also that ABI is equal (it can be found at artifacts/contracts/Counter.sol/Counter.json)
+## How to use smart contracts from the frontend
+As the contracts are compiled and deployed by the backend, the frontend simply need to make a request to the endpoint `api/contract?name=<contract_name>` to obtain both abi and address of the contract.

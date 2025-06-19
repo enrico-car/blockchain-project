@@ -37,7 +37,6 @@ async function test() {
     const account = web3.eth.accounts.create();
     console.log(account);
 
-
     //interact with Counter smart contract
     
     //read both abi and address of contract
