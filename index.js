@@ -10,6 +10,9 @@ var { Web3 } = require('web3');
 
 var web3 = new Web3(Web3.givenProvider || 'http://localhost:8545');
 
+const fs = require('fs');
+const path = require('path');
+
 async function test() {
   try {
     //check connection by fetching latest block
@@ -33,6 +36,27 @@ async function test() {
     //create a new account (new private key and address)
     const account = web3.eth.accounts.create();
     console.log(account);
+
+
+    //interact with Counter smart contract
+    
+    //read both abi and address of contract
+    const abiPath = path.join(__dirname, 'build', 'abi', 'Counter.json');
+    const abi = JSON.parse(fs.readFileSync(abiPath, 'utf8'));
+    const deployedAddresses = require('./deployedContracts.json');
+    const counterAddress = deployedAddresses['Counter'];
+
+    const counterContract = new web3.eth.Contract(abi, counterAddress);
+
+    //check value and then increment it
+    const count = await counterContract.methods.get().call();
+    console.log('Current count:', count);
+
+    await counterContract.methods.increment().send({ from: accounts[0] });
+
+    const newCount = await counterContract.methods.get().call();
+    console.log('Count after increment:', newCount);
+
 
   } catch (error) {
     console.error('Error:', error);

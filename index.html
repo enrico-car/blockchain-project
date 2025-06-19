@@ -90,32 +90,6 @@
       }
     }
 
-    // the following constant defines the deployed contract Counter
-    const contractAddress = "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707";
-    const contractABI = [
-      {
-        "inputs": [],
-        "name": "count",
-        "outputs": [{"internalType": "uint256","name": "","type": "uint256"}],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "get",
-        "outputs": [{"internalType": "uint256","name": "","type": "uint256"}],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "increment",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      }
-    ];
-
     /*
     the function calls two of the contract functions, one to increment the counter
     will ultimately will start a transaction procedure and one to retrieve the latest
@@ -127,12 +101,22 @@
         return;
       }
       try {
-        // create an ethers.js provider using the injected MetaMask provider
+        // Fetch ABI and address from backend API
+        //as a test, it is hardcoded but with the new endpoint it is much more flexible
+        const response = await fetch('/api/contract?name=Counter');
+        if (!response.ok) {
+          throw new Error('Failed to fetch contract data');
+        }
+        const { abi, address } = await response.json();
+
+        // Create ethers.js provider and signer
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
-        // create a contract instance with the contract address, ABI, and signer
-        const contract = new ethers.Contract(contractAddress, contractABI, signer);
-        
+
+        // Create contract instance using fetched ABI and address
+        const contract = new ethers.Contract(address, abi, signer);
+
+        // Call contract methods
         await contract.increment();
         const count = await contract.get();
         document.getElementById('result').innerText = "Count is: " + count.toString();
