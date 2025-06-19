@@ -22,12 +22,18 @@ npx hardhat init
 ```
 and create a new javascript project making sure to installing also the project's dependencies with npm.
 
-In order to deploy the contracts, in particular Counter.sol, run the following line:
+In order to deploy the contracts, in particular Counter.sol, you need to go through two steps.\
+First compile the contract:
 ```bash
-npx hardhat run deploy.js --network localhost
+node compile.js
 ```
 
-This will deploy the contract and `return the address` of it.
+Tnen deploy it:
+```bash
+node deploy.js
+```
+
+This will deploy the contract and `return the address` of it by also storing it in a txt file.
 
 ## Connect metamask to local network
 In the case you want to connect metamask to hardhat network or any local one, follow the following steps:

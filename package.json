@@ -14,6 +14,7 @@
     "express": "^5.1.0",
     "hardhat": "^2.24.2",
     "http": "^0.0.1-security",
+    "solc": "^0.8.30",
     "web3": "^4.16.0"
   },
   "Type": "module",
