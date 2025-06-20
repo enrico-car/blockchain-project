@@ -4,6 +4,13 @@
   <title>MetaMask Connect</title>
 </head>
 <body>
+  <!--
+  a simple web page where you can use the basic functionalities of metamask and web3 in particular:
+  - connect to your wallet
+  - make a transaction with a fixed amount of eth
+  - fetch information about a transaction given its hash
+  - increment the counter using a smart contract transaction
+  -->
   <h1>MetaMask Connection</h1>
   <button onclick="connect()">Connect Wallet</button><br/><br/>
 
@@ -22,6 +29,67 @@
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script>
 
+    //setInterval(getCounter, 10000);//each 10s call timerCounter()
+
+    var counterAbi, counterAddress;//these variables will store the abi and the address of a single contract
+
+    /*
+    when loading the page, load the abi and address of contract and request the latest
+    counter value
+
+    fetching the contract info at loading is much more efficient as later on you won't need 
+    to request every time such information
+    */
+    window.onload = async function () {
+      await load_abi();
+      await getCounter();
+    };
+
+    /*
+    a function to request from the backend all the abis required
+    in this case ony for the counter smart contract
+    */
+    async function load_abi(){
+      try {
+        // Fetch ABI and address from backend API
+        //as a test, it is hardcoded but with the new endpoint it is much more flexible
+        const response = await fetch('/contract-info/contract=Counter');
+        if (!response.ok) {
+          throw new Error('Failed to fetch contract data');
+        }
+        const { abi, address } = await response.json();
+
+        counterAbi = abi;
+        counterAddress = address;
+      } catch (err) {
+        //alert("Error calling contract: " + err.message);
+        console.error(err);
+      }
+    }
+
+    /*
+    a simple function that will request the value of the counter using a 
+    smart contract
+    */
+    async function getCounter(){
+      console.log("Requesting counter...");
+      try {
+        // Create ethers.js provider and signer
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+
+        // Create contract instance using fetched ABI and address
+        const contract = new ethers.Contract(counterAddress, counterAbi, signer);
+
+        // Call contract methods
+        const count = await contract.get();
+        document.getElementById('result').innerText = "Count is: " + count.toString();
+      } catch (err) {
+        //alert("Error calling contract: " + err.message);
+        console.error(err);
+      }
+    }
+
     /*
     this function allows users to connect to their metamask wallet only if
     such extension is installed
@@ -32,6 +100,8 @@
         return;
       }
       try {
+        //the following function will open a popup window for authentication
+        //in the case the usre is already logged, the call will simply return the account
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         alert('Connected: ' + accounts[0]);
         console.log('Connected:', accounts[0]);
@@ -54,7 +124,7 @@
         const tx = {
           from: accounts[0],
           to: document.getElementById("to").value,
-          value: '0x2386F26FC10000' // 0.01 ETH in wei (hex)
+          value: '0x2386F26FC10000' // 0.01 ETH in wei (hex) - fixed amount to transfer
         };
         const txHash = await window.ethereum.request({
           method: 'eth_sendTransaction',
@@ -67,6 +137,10 @@
       }
     }
 
+    /*
+    given the hash of a transaction, try to retrieve its information if 
+    present on the blockchain otherwise, return an error message
+    */
     async function getTransactionInfo() {
       if (!window.ethereum) {
         alert('MetaMask is not installed');
@@ -91,9 +165,8 @@
     }
 
     /*
-    the function calls two of the contract functions, one to increment the counter
-    will ultimately will start a transaction procedure and one to retrieve the latest
-    counter value
+    the function calls the function to increment the counter which
+    will ultimately will start a transaction procedure
     */
     async function incrementCounter() {
       if (!window.ethereum) {
@@ -101,25 +174,18 @@
         return;
       }
       try {
-        // Fetch ABI and address from backend API
-        //as a test, it is hardcoded but with the new endpoint it is much more flexible
-        const response = await fetch('/api/contract?name=Counter');
-        if (!response.ok) {
-          throw new Error('Failed to fetch contract data');
-        }
-        const { abi, address } = await response.json();
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
 
         // Create ethers.js provider and signer
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
 
         // Create contract instance using fetched ABI and address
-        const contract = new ethers.Contract(address, abi, signer);
+        const contract = new ethers.Contract(counterAddress, counterAbi, signer);
 
         // Call contract methods
         await contract.increment();
-        const count = await contract.get();
-        document.getElementById('result').innerText = "Count is: " + count.toString();
+        await getCounter();
       } catch (err) {
         alert("Error calling contract: " + err.message);
         console.error(err);
