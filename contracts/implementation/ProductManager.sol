@@ -78,7 +78,7 @@ contract ProductManager is Ownable {
     }
 
     mapping (uint256 => LotDetails) public lots;
-    uint256[] public lots_ids;
+    uint256[] public lotsIds;
 
     function createLot(uint256 lotId, LotDetails calldata lotDetails) external onlyAuthorized {
 
@@ -86,7 +86,7 @@ contract ProductManager is Ownable {
         require(bytes(products[lotDetails.productId].productIdentification).length != 0, "Product does not exists"); // Check if product exists
 
         lots[lotId] = lotDetails;   // Add the new lot
-        lots_ids.push(lotId);
+        lotsIds.push(lotId);
 
         emit LotCreated(lotId, lotDetails.productId, lotDetails);
 
@@ -95,10 +95,10 @@ contract ProductManager is Ownable {
     function removeLot (uint256 lotId) external onlyAuthorized {
         
         delete lots[lotId];     // Remove LotDetials struct
-        for (uint256 i = 0; i < lots_ids.length; i++) {     // Remove lot id, shrink array
-            if (lots_ids[i] == lotId){
-                lots_ids[i] = lots_ids[lots_ids.length - 1];
-                lots_ids.pop();
+        for (uint256 i = 0; i < lotsIds.length; i++) {     // Remove lot id, shrink array
+            if (lotsIds[i] == lotId){
+                lotsIds[i] = lotsIds[lotsIds.length - 1];
+                lotsIds.pop();
 
                 emit LotRemoved(lotId);
                 return; 
