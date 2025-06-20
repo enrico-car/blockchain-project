@@ -70,4 +70,4 @@ node server.js
 and visit the web page at `http://localhost:3000`
 
 ## How to use smart contracts from the frontend
-As the contracts are compiled and deployed by the backend, the frontend simply need to make a request to the endpoint `api/contract?name=<contract_name>` to obtain both abi and address of the contract.
+As the contracts are compiled and deployed by the backend, the frontend simply need to make a request to the specific endpoint which is defined in the controller file inside the routes folder.

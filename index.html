@@ -29,7 +29,7 @@
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script>
 
-    //setInterval(getCounter, 10000);//each 10s call timerCounter()
+    setInterval(getCounter, 10000);//each 10s call timerCounter()
 
     var counterAbi, counterAddress;//these variables will store the abi and the address of a single contract
 
@@ -43,6 +43,7 @@
     window.onload = async function () {
       await load_abi();
       await getCounter();
+      await subscribeEvent();
     };
 
     /*
@@ -191,6 +192,31 @@
         console.error(err);
       }
     }
+
+    /*
+    the function will subscribe to the event Increment and whenever a new event is emitted,
+    it will log a message with the event info and the content of the event.
+    */
+    async function subscribeEvent() {
+      if (!window.ethereum) {
+        alert('MetaMask is not installed');
+        return;
+      }
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      const contract = new ethers.Contract(counterAddress, counterAbi, signer);
+
+      contract.on('Increment', (...args) => {
+        const event = args[args.length - 1]; // the last arg is the event object
+        console.log('Event emitted:', event);
+        console.log('Return values:', args.slice(0, -1)); // actual emitted values
+      });
+
+      console.log('Subscribed to Increment event');
+    }
+
   </script>
 </body>
 </html>
