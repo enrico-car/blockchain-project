@@ -262,6 +262,7 @@ contract TransactionManager is Ownable {
 /* TODO: 
     Event sui vari file per modifiche alle ACL
     Testing + Proxy hardhat
+    Funzione per vedere transazioni proposte (getProposedTransactions) ??
 */
 
 /*
@@ -276,8 +277,8 @@ contract TransactionManager is Ownable {
     7 - Give authorization to a Wallet (manufacturing house) in the ProductManager contract --> Can create products and lots
     8 - Create some products on the ProductManager: 1, ["Prod1", "Material"]
     9 - Create some lots on the ProductManager: 1, ["01/01/0001", 10000, 1]
-    10 - (Temporary) Grant authorization to a user in the InventoryManager and Add to a user's inventory some items: walletAddrA, 1, 10
-        TODO: Da rivedere il modo in cui mintiamo i prodotti dall'azienda produttrice
+    10 - Grant manufacturerUsers authorization to a user in the InventoryManager and Add to a user's inventory some items
+            using addToManufacturerInventory: 1, 10
     11 - Give mint authorization to the TransactionManager in the CashbackToken contract --> Can mint tokens
     12 - Give authorization to the TransactionManager in the InventoryManager contract --> Can operate on users' wallets
     13 - Propose a tranfer between two wallets: walletAddrB, [1], [5]
