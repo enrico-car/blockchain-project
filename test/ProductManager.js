@@ -160,7 +160,7 @@ describe("ProductManager", function () {
   });
 
   describe("Lot operations", function () {  // TODO: Creare nuova fixture per i test dei lotti, in cui creo già un prodotto
-    it("Should prevent the creation of lots that refer to a product not existng", async function () {
+    it("Should prevent the creation of lots that refer to a product not existing", async function () {
       const { productManager, owner } = await loadFixture(deployProductManager);
 
       await expect(productManager.createLot(sampleLot.lotId, sampleLot.LotDetails)).to.be.revertedWith(
