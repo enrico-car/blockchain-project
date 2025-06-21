@@ -15,7 +15,7 @@ async function main() {
   }
 
   fs.writeFileSync(
-    "deployment-addresses.json",
+    "deployedContracts.json",
     JSON.stringify(addresses, null, 2)
   );
 

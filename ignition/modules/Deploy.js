@@ -37,10 +37,10 @@ module.exports = buildModule("DeployModule", (m) => {
   m.call(inventoryManager, "setUserAuth", [transactionManager, true]);
 
   return {
-    token,
-    handler,
-    productManager,
-    inventoryManager,
-    transactionManager,
+    CashbackToken: token,
+    CashbackHandler: handler,
+    ProductManager: productManager,
+    InventoryManager: inventoryManager,
+    TransactionManager: transactionManager,
   };
 });
