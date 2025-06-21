@@ -43,7 +43,7 @@ contract InventoryManager is Ownable {
     function addToInventory(address account, uint256 lotId, uint256 quantity) external onlyAuthorized {
 
         // Note: quanity >= 0 is checked by default, since we are using uint
-        require(productManager.getLot(lotId).totalQuantity != 0, "Lot doesn't exists");  // Check if lot exists
+        productManager.getLot(lotId);       // Check if lot exists, otherwise getLot will revert
 
         if (inventory[account][lotId] == 0){        // If i don't own any unit of the product, i also need to add it to ownedLots
             ownedLots[account].push(lotId);
@@ -55,7 +55,7 @@ contract InventoryManager is Ownable {
     // Function used only from the manufacturer to add products to its own inventory
     function addToManufacturerInventory(uint256 lotId, uint256 quantity) external onlyManufacturer {
 
-        require(productManager.getLot(lotId).totalQuantity != 0, "Lot doesn't exists");  // Check if lot exists
+        productManager.getLot(lotId);       // Check if lot exists, otherwise getLot will revert
 
         if (inventory[msg.sender][lotId] == 0){        // If i don't own any unit of the product, i also need to add it to ownedLots
             ownedLots[msg.sender].push(lotId);
@@ -68,7 +68,7 @@ contract InventoryManager is Ownable {
 
     function removeFromInventory(address account, uint256 lotId, uint256 quantity) external onlyAuthorized {
 
-        require(productManager.getLot(lotId).totalQuantity != 0, "Lot doesn't exists"); // Check if lot exists
+        productManager.getLot(lotId);       // Check if lot exists, otherwise getLot will revert
         require(inventory[account][lotId] >= quantity, string.concat("Quantity (", Strings.toString(quantity) ,
             ") is bigger than the amount in inventory (", Strings.toString(inventory[account][lotId]), ")"));   // Check if account has enough units
 
@@ -120,12 +120,10 @@ contract InventoryManager is Ownable {
 
         for (uint256 i = 0; i < lotIds.length; i++) {
 
-            if (productManager.getLot(lotIds[i]).totalQuantity == 0) {              // Check if lot exists
-                revert(string.concat("Lot ", Strings.toString(lotIds[i]), " doesn't exist"));
-            }
+            productManager.getLot(lotIds[i]);       // Check if lot exists, otherwise getLot will revert
             if (inventory[account][lotIds[i]] < quantities[i]) {                    // Check if account has enough units
                 revert(string.concat("Quantity for lot ", Strings.toString(lotIds[i]), 
-                    "(", Strings.toString(quantities[i]) ,") is bigger than the amount in inventory (",
+                    " (", Strings.toString(quantities[i]) ,") is bigger than the amount in inventory (",
                     Strings.toString(inventory[account][lotIds[i]]), ")"));
             }
         }
@@ -140,4 +138,7 @@ contract InventoryManager is Ownable {
 /* TODO: 
     Aggiungere controlli di sicurezza: Chi può chiamare le funzioni? Metterei solo il contratto che gestisce le transazioni 
         + tecnici/produttore (per eventuali problemi)
+
+    ACL per hasSufficientInventory ?? Solo authorized anche qui?? 
+        Potremmo usarla per calcolare l'inventario di un'altro soggetto, rendendo vano l'onlyAuthorized su getInventory
 */ 
