@@ -60,12 +60,20 @@ contract TransactionManager is Ownable {
 
     }
 
-    function propseTransaction(address to, uint256[] calldata lotIds, uint256[] calldata quantities) external {
+    // TODO: require che to sia diverso da from
+    function proposeTransaction(address to, uint256[] calldata lotIds, uint256[] calldata quantities) external {
+
+        require(to != msg.sender, "Transactions towards self are not allowed");
 
         require(lotIds.length == quantities.length, "Arrays size must match");  // Check if arrays' size match
 
         address from = msg.sender;
         inventoryManager.hasSufficientInventory(from, lotIds, quantities);      // Check quantities and lot existence (revert if not) 
+
+        for (uint256 i = 0; i < lotIds.length; i++) {                           // Remove items from sender inventory
+            inventoryManager.removeFromInventory(from, lotIds[i], quantities[i]);
+        }
+
 
         Transaction memory t = Transaction(from, to, lotIds, quantities, block.timestamp, keccak256(abi.encode(lotIds, quantities, block.timestamp)));
         pendingTransactions[from][to].push(t);          // Add transaction
@@ -122,9 +130,8 @@ contract TransactionManager is Ownable {
         if (review) {       // If transaction has been accepted
             
             uint256 rewardAmount = 0;
-            for (uint256 i; i < t.lotIds.length ; i++)      // Update inventories of sender and receiver
+            for (uint256 i; i < t.lotIds.length ; i++)      // Update inventory of receiver, sender's already updated
             {
-                inventoryManager.removeFromInventory(t.from, t.lotIds[i], t.quantities[i]);
                 inventoryManager.addToInventory(t.to, t.lotIds[i], t.quantities[i]);
 
                 rewardAmount += t.quantities[i] * productManager.getLot(t.lotIds[i]).unitPrice;
@@ -146,6 +153,10 @@ contract TransactionManager is Ownable {
 
         }
         else {
+
+            for (uint256 i = 0; i < t.lotIds.length; i++) {     // Give back items to the sender
+                inventoryManager.addToInventory(t.from, t.lotIds[i], t.quantities[i]);
+            }
 
             emit RejectedTransaction(from, to, t.detailsHash, t);
 
@@ -210,10 +221,11 @@ contract TransactionManager is Ownable {
                 while (i < txs.length) {                                    // Iterate over transactions previously retrieved               
                     if (nowTime - txs[i].timestamp > maxAge) {                  // If it is expired, remove it
 
-                        txs[i] = txs[txs.length - 1];                           // We don't increase i: after pop(), txs[i] is a new element
+                        Transaction memory removedTx = txs[i];                  // We don't increase i: after pop(), txs[i] is a new element
+                        txs[i] = txs[txs.length - 1];
                         txs.pop();
 
-                        emit RemovedTransaction(sender, receiver, txs[i].detailsHash, txs[i]);
+                        emit RemovedTransaction(sender, receiver, removedTx.detailsHash, removedTx);
 
                     } else {
                         i++;                                                    // If not expired, proceed with next element
@@ -248,7 +260,7 @@ contract TransactionManager is Ownable {
             inventoryManager.removeFromInventory(from, lotIds[i], quantities[i]);
             rewardAmount += quantities[i] * productManager.getLot(lotIds[i]).unitPrice;
         }
-        rewardAmount = (10**18) * totalPrice * rewardMultiplier / 100 / 10000;    // TODO: Verificare che la formula sia corretta
+        rewardAmount = (10**18) * totalPrice * rewardMultiplier / 100 / 10000;
 
         // Note: Remember to manually set minting auth to this contract
         cashbackToken.mint(from, rewardAmount);           // Mint reward tokens
@@ -273,17 +285,17 @@ contract TransactionManager is Ownable {
     3 - Give burn authorization to CashbackHandler in the CashbackToken contract --> Can burn tokens
     4 - Deploy ProductManager
     5 - Deploy InventoryManager, using the ProductManager address as parameter in the constructor
-    6 - Deploy TransactionManager, using the InventoryManager and CashbackToken addresses as parameters in the constructor
+    6 - Deploy TransactionManager, using ProductManager, InventoryManager and CashbackToken addresses as parameters in the constructor
     7 - Give authorization to a Wallet (manufacturing house) in the ProductManager contract --> Can create products and lots
     8 - Create some products on the ProductManager: 1, ["Prod1", "Material"]
     9 - Create some lots on the ProductManager: 1, ["01/01/0001", 10000, 1]
-    10 - Grant manufacturerUsers authorization to a user in the InventoryManager and Add to a user's inventory some items
-            using addToManufacturerInventory: 1, 10
-    11 - Give mint authorization to the TransactionManager in the CashbackToken contract --> Can mint tokens
-    12 - Give authorization to the TransactionManager in the InventoryManager contract --> Can operate on users' wallets
-    13 - Propose a tranfer between two wallets: walletAddrB, [1], [5]
-    14 - Accept proposed transaction (using walletB): walletAddrA
+    10 - Grant manufacturerUsers authorization to a user in the InventoryManager 
+    11 - Add to a user's inventory some items using addToManufacturerInventory: 1, 10
+    12 - Give mint authorization to the TransactionManager in the CashbackToken contract --> Can mint tokens
+    13 - Give authorization to the TransactionManager in the InventoryManager contract --> Can operate on users' wallets
+    14 - Propose a tranfer between two wallets: walletAddrB, [1], [5]
+    15 - Accept proposed transaction (using walletB): walletAddrA
         Note: Use pendingTransaction to retrieve detailsHash
-    15 - Verify changes in walletB's inventory
+    16 - Verify changes in walletB's inventory
 
 */
