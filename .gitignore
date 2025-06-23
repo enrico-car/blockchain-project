@@ -131,3 +131,7 @@ dist
 certificate/private.key
 certificate/server.crt
 certificate/server.csr
+
+
+artifacts/
+cache/

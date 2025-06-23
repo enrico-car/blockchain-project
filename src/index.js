@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const middlewares = require("./middlewares");
 // const https = require("https");
+const mongoose = require('mongoose');
 const http = require("http");
 const fs = require("fs");
 const getApisRouter = require("./api/router");
@@ -71,6 +72,7 @@ app.get("/", async (req, res) => {
 // });
 
 http.createServer(app).listen(port, async () => {
+  await mongoose.connect(`mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@blockchain.vjumxip.mongodb.net/?retryWrites=true&w=majority&appName=Blockchain`);
   console.log(`Server HTTP avviato su http://localhost:${port}`);
 });
 
