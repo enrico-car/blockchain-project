@@ -258,7 +258,7 @@ contract TransactionManager is Ownable {
         for (uint256 i; i < lotIds.length ; i++)      // Update inventories of sender and receiver
         {
             inventoryManager.removeFromInventory(from, lotIds[i], quantities[i]);
-            rewardAmount += quantities[i] * productManager.getLot(lotIds[i]).unitPrice;
+            totalPrice += quantities[i] * productManager.getLot(lotIds[i]).unitPrice;
         }
         rewardAmount = (10**18) * totalPrice * rewardMultiplier / 100 / 10000;
 
