@@ -203,7 +203,8 @@ describe("InventoryManager", function () {
     it("Should allow manufacturer to add lot to its own inventory", async function () {
         const { inventoryManager, owner } = await loadFixture(deployInventoryManagerWithLot);
 
-        await inventoryManager.addToManufacturerInventory(sampleInventory.lotId, sampleInventory.quantity);
+        await expect(inventoryManager.addToManufacturerInventory(sampleInventory.lotId, sampleInventory.quantity)).to
+          .emit(inventoryManager, "AddedToManufacturerInventory").withArgs(owner.address, sampleInventory.lotId, sampleInventory.quantity);
 
         const [previousLotIds, previousQuantities] = await inventoryManager.getInventory(owner.address);
         expect(previousLotIds[0]).to.equal(sampleInventory.lotId);
