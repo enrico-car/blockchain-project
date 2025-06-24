@@ -68,7 +68,7 @@ contract ProductManager is Ownable {
 
     }
 
-    function getAllProduct () external view returns (uint256[] memory, DPP[] memory) {
+    function getAllProducts () external view returns (uint256[] memory, DPP[] memory) {
 
         DPP[] memory retProducts = new DPP[](productsIds.length);
         for (uint256 i = 0; i < productsIds.length; i++) {  
