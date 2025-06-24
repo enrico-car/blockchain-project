@@ -156,7 +156,15 @@ describe("ProductManager", function () {
         .to.equal(sampleProduct.DPP.materials);
 
     });
-    
+
+    it("Should provide information about every product", async function () {
+      const { productManager, owner, otherAccount } = await loadFixture(deployProductManagerWithProduct);
+
+      const [productIds, DPPs] = await productManager.getAllProducts();
+      expect(productIds[0]).to.equal(sampleProduct.productId);
+      expect(DPPs[0].materials).to.equal(sampleProduct.DPP.materials);
+
+    });
   });
 
   describe("Lot operations", function () {  // TODO: Creare nuova fixture per i test dei lotti, in cui creo già un prodotto
@@ -251,7 +259,17 @@ describe("ProductManager", function () {
         .to.equal(sampleLot.LotDetails.productId);
 
     });
-    
+
+    it("Should provide information about every lot", async function () {
+      const { productManager, owner, otherAccount } = await loadFixture(deployProductManagerWithProduct);
+
+      await productManager.createLot(sampleLot.lotId, sampleLot.LotDetails);
+      
+      const [lotIds, DPPs] = await productManager.getAllLots();
+      expect(lotIds[0]).to.equal(sampleLot.lotId);
+      expect(DPPs[0].materials).to.equal(sampleLot.LotDetails.materials);
+
+    });
   });
 
 });
