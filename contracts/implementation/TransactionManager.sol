@@ -60,7 +60,6 @@ contract TransactionManager is Ownable {
 
     }
 
-    // TODO: require che to sia diverso da from
     function proposeTransaction(address to, uint256[] calldata lotIds, uint256[] calldata quantities) external {
 
         require(to != msg.sender, "Transactions towards self are not allowed");
@@ -174,7 +173,7 @@ contract TransactionManager is Ownable {
         }
     }
 
-    function getIncomingTransaction() external view returns (Transaction[] memory) {
+    function getIncomingTransactions() external view returns (Transaction[] memory) {
 
         address receiver = msg.sender;
 
@@ -188,7 +187,7 @@ contract TransactionManager is Ownable {
 
         Transaction[] memory result = new Transaction[](total);     // Initialize the array
         
-        uint256 index;
+        uint256 index = 0;
         for (uint256 i = 0; i < senders.length; i++) {      // Fill the array with transactions
             address sender = senders[i];
             Transaction[] storage txs = pendingTransactions[sender][receiver];
@@ -199,6 +198,28 @@ contract TransactionManager is Ownable {
 
         return result;
 
+    }
+
+    function getOutgoingTransactions() external view returns (Transaction[] memory) {
+        address from = msg.sender;
+        address[] memory receivers = sendersToReceivers[from];
+
+        uint256 total = 0;
+        for (uint256 i = 0; i < receivers.length; i++) {        // Compute how many transaction the caller has proposed
+            total += pendingTransactions[from][receivers[i]].length;
+        }
+
+        Transaction[] memory result = new Transaction[](total);   // Initialize the array
+        
+        uint256 index = 0;
+        for (uint256 i = 0; i < receivers.length; i++) {            // Fill the array
+            Transaction[] storage txs = pendingTransactions[from][receivers[i]];
+            for (uint256 j = 0; j < txs.length; j++) {
+                result[index++] = txs[j];
+            }
+        }
+
+        return result;
     }
 
     // Function used to remove old transactions (based on maxAge) still in pending state. 
