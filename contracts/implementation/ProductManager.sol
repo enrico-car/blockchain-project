@@ -68,6 +68,16 @@ contract ProductManager is Ownable {
 
     }
 
+    function getAllProduct () external view returns (uint256[] memory, DPP[] memory) {
+
+        DPP[] memory retProducts = new DPP[](productsIds.length);
+        for (uint256 i = 0; i < productsIds.length; i++) {  
+            retProducts[i] = products[productsIds[i]];
+        }
+        return (productsIds, retProducts);
+
+    }
+
     struct LotDetails {
 
         string expirationDate;
@@ -116,9 +126,20 @@ contract ProductManager is Ownable {
 
     }
 
+    function getAllLots () external view returns (uint256[] memory, LotDetails[] memory) {
+
+        LotDetails[] memory retLots = new LotDetails[](lotsIds.length);
+        for (uint256 i = 0; i < lotsIds.length; i++) {  
+            retLots[i] = lots[lotsIds[i]];
+        }
+        return (lotsIds, retLots);
+
+    }
+
 }
 
 /* TODO: 
     Controllare parte di sicurezza: Chi può chiamare le funzioni ?? Lasciamo la lettura pubblica ??  
+    prodouct id a stringa (utile per renderlo l'hash di qualche campo del prodotto) ?? Similmente per lotId
 */
 
