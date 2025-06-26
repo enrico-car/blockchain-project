@@ -1,5 +1,6 @@
 require("dotenv").config();
 const express = require("express");
+const cors = require('cors');
 const middlewares = require("./middlewares");
 // const https = require("https");
 const mongoose = require('mongoose');
@@ -14,6 +15,8 @@ const CashbackToken = require("./utils/abis/CashbackToken.json");
 
 const app = express();
 middlewares(app);
+
+app.use(cors());
 
 app.use(bodyParser.json());
 app.use("/api", getApisRouter());
