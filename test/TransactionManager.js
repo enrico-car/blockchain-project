@@ -158,6 +158,13 @@ describe("TransactionManager", function () {
         .to.be.revertedWith("Transactions towards self are not allowed");
     });
 
+    it("Should prevent proposal of empty transaction", async function () {
+      const { transactionManager, manufacturer, wholesaler } = await loadFixture(deployTransactionManager);
+
+      await expect(transactionManager.connect(manufacturer).proposeTransaction(wholesaler.address, [], []))
+        .to.be.revertedWith("Cannot create transaction with empty lot list");
+    });
+
     it("Should handle differences in arrays' sizes during the creation of a new transaction", async function () {
       const { transactionManager, manufacturer, wholesaler } = await loadFixture(deployTransactionManager);
 
