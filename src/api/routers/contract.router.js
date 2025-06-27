@@ -28,7 +28,8 @@ const getContractInfo = async (req, res) => {
         .status(404)
         .json({ error: "ABI not found for contract " + contractName });
     }
-    const abi = JSON.parse(fs.readFileSync(abiPath, "utf8"));
+    const artifact = JSON.parse(fs.readFileSync(abiPath, "utf8"));
+    const abi = artifact.abi;
 
     // Read address
     const deployedPath = path.resolve(

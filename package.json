@@ -20,6 +20,7 @@
     "http": "^0.0.1-security",
     "mongodb": "^6.17.0",
     "mongoose": "^8.16.0",
+    "multer": "^2.0.1",
     "nodemon": "^3.1.7",
     "web3": "^4.16.0"
   },

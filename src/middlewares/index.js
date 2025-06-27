@@ -30,7 +30,7 @@ module.exports = (app) => {
   // app.use(cors(corsOptions));
   app.use(bodyParser.json({ type: "application/*+json" }));
   // app.use(session(sessionConfig));
-  app.use(express.json());
+  app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true }));
   app.use(express.static("public"));
   app.use(cookieParser());
