@@ -64,6 +64,8 @@ contract TransactionManager is Ownable {
 
         require(to != msg.sender, "Transactions towards self are not allowed");
 
+        require(lotIds.length > 0, "Cannot create transaction with empty lot list");
+
         require(lotIds.length == quantities.length, "Arrays size must match");  // Check if arrays' size match
 
         address from = msg.sender;
@@ -242,6 +244,10 @@ contract TransactionManager is Ownable {
                 while (i < txs.length) {                                    // Iterate over transactions previously retrieved               
                     if (nowTime - txs[i].timestamp > maxAge) {                  // If it is expired, remove it
 
+                        for (uint256 j = 0; j < txs[i].lotIds.length; j++) {     // Give back items to the sender
+                            inventoryManager.addToInventory(txs[i].from, txs[i].lotIds[j], txs[i].quantities[j]);
+                        }
+
                         Transaction memory removedTx = txs[i];                  // We don't increase i: after pop(), txs[i] is a new element
                         txs[i] = txs[txs.length - 1];
                         txs.pop();
@@ -294,8 +300,7 @@ contract TransactionManager is Ownable {
 
 /* TODO: 
     Event sui vari file per modifiche alle ACL
-    Testing + Proxy hardhat
-    Funzione per vedere transazioni proposte (getProposedTransactions) ??
+    Proxy hardhat
 */
 
 /*
