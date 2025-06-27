@@ -1,0 +1,57 @@
+version: '3.9'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    depends_on:
+      - mongodb
+      - hardhat
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend/src:/app/src
+      - /app/node_modules
+    environment:
+    - HARDHAT_RPC_URL=http://localhost:8545
+
+  hardhat:
+    build:
+      context: ./hardhat
+      dockerfile: Dockerfile
+    container_name: hardhat
+    ports:
+      - "8545:8545"
+    volumes:
+      - ./hardhat/contracts:/app/contracts
+      - ./hardhat/scripts:/app/scripts
+      - ./hardhat/hardhat.config.js:/app/hardhat.config.js
+    expose:
+      - "8545"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend/src:/app/src  # Solo per sviluppo
+    environment:
+      - VITE_API_URL=http://localhost:3000
+
+volumes:
+  mongo-data:
