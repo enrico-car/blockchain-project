@@ -53,16 +53,20 @@ contract InventoryManager is Ownable {
     }
 
     // Function used only from the manufacturer to add products to its own inventory
-    function addToManufacturerInventory(uint256 lotId, uint256 quantity) external onlyManufacturer {
+    function addToManufacturerInventory(uint256 lotId) external onlyManufacturer {
 
-        productManager.getLot(lotId);       // Check if lot exists, otherwise getLot will revert
+        ProductManager.LotDetails memory lotDetails = productManager.getLot(lotId);       // Check if lot exists, otherwise getLot will revert
+
+        require(lotDetails.hasBeenProduced == false, "Lot has already been produced");      // Check if lot has been already produced
 
         if (inventory[msg.sender][lotId] == 0){        // If i don't own any unit of the product, i also need to add it to ownedLots
             ownedLots[msg.sender].push(lotId);
         }
-        inventory[msg.sender][lotId] += quantity;      // Increase account's quantity
+        inventory[msg.sender][lotId] += lotDetails.totalQuantity;      // Increase account's quantity
 
-        emit AddedToManufacturerInventory(msg.sender, lotId, quantity);
+        productManager.MarkLotAsProduced(lotId);
+
+        emit AddedToManufacturerInventory(msg.sender, lotId, lotDetails.totalQuantity);
 
     }
 

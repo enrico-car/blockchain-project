@@ -16,6 +16,17 @@ contract ProductManager is Ownable {
         authorizedUsers[wallet] = authorized;
     }
 
+    mapping(address => bool) public inventoryManager;
+
+    modifier onlyInventoryManager() {                  // Modifier used as AccessControlList
+        require(inventoryManager[msg.sender], "Not authorized to use this function");
+        _;
+    }
+
+    function setInventoryManager(address wallet, bool authorized) external onlyOwner {
+        inventoryManager[wallet] = authorized;
+    }
+
     struct DPP {
 
         string productIdentification;
@@ -80,25 +91,37 @@ contract ProductManager is Ownable {
 
     struct LotDetails {
 
+        string timestamp;
         string expirationDate;
         uint256 totalQuantity;
         uint256 unitPrice;      // Note: 2 decimal points (es: unitPrice = 1000 means 10 $)
         uint256 productId;
+        bool hasBeenProduced;   // Indicates if the lot has been physically produced by the manufacturer
 
     }
 
     mapping (uint256 => LotDetails) public lots;
     uint256[] public lotsIds;
 
-    function createLot(uint256 lotId, LotDetails calldata lotDetails) external onlyAuthorized {
+    function createLot(uint256 lotId, string calldata timestamp, string calldata expirationDate, uint256 totalQuantity, uint256 unitPrice, uint256 productId) external onlyAuthorized {
 
         require(bytes(lots[lotId].expirationDate).length == 0, "Lot already exists");   // Check if lot already exists
-        require(bytes(products[lotDetails.productId].productIdentification).length != 0, "Product does not exists"); // Check if product exists
+        require(bytes(products[productId].productIdentification).length != 0, "Product does not exists"); // Check if product exists
 
-        lots[lotId] = lotDetails;   // Add the new lot
+        LotDetails memory lotDetails  = LotDetails({                      // Create new lot
+            timestamp: timestamp,
+            expirationDate: expirationDate,
+            totalQuantity: totalQuantity,
+            unitPrice: unitPrice,
+            productId: productId,
+            hasBeenProduced: false
+        });
+
+        lots[lotId] = lotDetails;
+        
         lotsIds.push(lotId);
 
-        emit LotCreated(lotId, lotDetails.productId, lotDetails);
+        emit LotCreated(lotId, productId, lotDetails);
 
     }
 
@@ -136,10 +159,19 @@ contract ProductManager is Ownable {
 
     }
 
+    //TODO: 
+    function MarkLotAsProduced (uint256 lotId) external onlyInventoryManager {
+
+        require(bytes(lots[lotId].expirationDate).length != 0, "Lot does not exist");
+        require(!lots[lotId].hasBeenProduced, "Lot already marked as produced");
+
+        lots[lotId].hasBeenProduced = true;
+
+    }
+
 }
 
 /* TODO: 
     Controllare parte di sicurezza: Chi può chiamare le funzioni ?? Lasciamo la lettura pubblica ??  
-    prodouct id a stringa (utile per renderlo l'hash di qualche campo del prodotto) ?? Similmente per lotId
 */
 

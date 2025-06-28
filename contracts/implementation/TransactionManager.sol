@@ -311,17 +311,18 @@ contract TransactionManager is Ownable {
     3 - Give burn authorization to CashbackHandler in the CashbackToken contract --> Can burn tokens
     4 - Deploy ProductManager
     5 - Deploy InventoryManager, using the ProductManager address as parameter in the constructor
-    6 - Deploy TransactionManager, using ProductManager, InventoryManager and CashbackToken addresses as parameters in the constructor
-    7 - Give authorization to a Wallet (manufacturing house) in the ProductManager contract --> Can create products and lots
-    8 - Create some products on the ProductManager: 1, ["Prod1", "Material"]
-    9 - Create some lots on the ProductManager: 1, ["01/01/0001", 10000, 1]
-    10 - Grant manufacturerUsers authorization to a user in the InventoryManager 
-    11 - Add to a user's inventory some items using addToManufacturerInventory: 1, 10
-    12 - Give mint authorization to the TransactionManager in the CashbackToken contract --> Can mint tokens
-    13 - Give authorization to the TransactionManager in the InventoryManager contract --> Can operate on users' wallets
-    14 - Propose a tranfer between two wallets: walletAddrB, [1], [5]
-    15 - Accept proposed transaction (using walletB): walletAddrA
+    6 - Grant inventoryManagerAuth authorization to the InventoryManager in ProductManager
+    7 - Deploy TransactionManager, using ProductManager, InventoryManager and CashbackToken addresses as parameters in the constructor
+    8 - Give authorization to a Wallet (manufacturing house) in the ProductManager contract --> Can create products and lots
+    9 - Create some products on the ProductManager: 1, ["Prod1", "Material"]
+    10 - Create some lots on the ProductManager: 1, ["01/01/0001", 10000, 1]
+    11 - Grant manufacturerUsers authorization to a user in the InventoryManager 
+    12 - Add to a user's inventory some items using addToManufacturerInventory: 1, 10
+    13 - Give mint authorization to the TransactionManager in the CashbackToken contract --> Can mint tokens
+    14 - Give authorization to the TransactionManager in the InventoryManager contract --> Can operate on users' wallets
+    15 - Propose a tranfer between two wallets: walletAddrB, [1], [5]
+    16 - Accept proposed transaction (using walletB): walletAddrA
         Note: Use pendingTransaction to retrieve detailsHash
-    16 - Verify changes in walletB's inventory
+    17 - Verify changes in walletB's inventory
 
 */
