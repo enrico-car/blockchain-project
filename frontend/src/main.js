@@ -1,12 +1,7 @@
 import './assets/main.css'
+
 import { createApp } from 'vue'
 import App from './App.vue'
-import axios from 'axios'
+import router from './router'
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL
-})
-
-const app = createApp(App)
-app.config.globalProperties.$api = api
-app.mount('#app')
+createApp(App).use(router).mount('#app')

@@ -14,12 +14,9 @@ async function main() {
     addresses[name] = contract.target;
   }
 
-  fs.writeFileSync(
-    "deployedContracts.json",
-    JSON.stringify(addresses, null, 2)
-  );
+  fs.writeFileSync('/app/shared/deployedContracts.json', JSON.stringify(addresses, null, 2));
 
-  console.log("Contratti deployati:");
+  console.log("Deployed contracts:");
   console.log(addresses);
 }
 

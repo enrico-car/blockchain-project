@@ -22,6 +22,7 @@ services:
     volumes:
       - ./backend/src:/app/src
       - /app/node_modules
+      - shared-data:/app/shared
     environment:
     - HARDHAT_RPC_URL=http://localhost:8545
 
@@ -35,7 +36,9 @@ services:
     volumes:
       - ./hardhat/contracts:/app/contracts
       - ./hardhat/scripts:/app/scripts
+      - ./hardhat/test:/app/test
       - ./hardhat/hardhat.config.js:/app/hardhat.config.js
+      - shared-data:/app/shared
     expose:
       - "8545"
 
@@ -49,9 +52,10 @@ services:
     depends_on:
       - backend
     volumes:
-      - ./frontend/src:/app/src  # Solo per sviluppo
+      - ./frontend/src:/app/src
     environment:
       - VITE_API_URL=http://localhost:3000
 
 volumes:
   mongo-data:
+  shared-data:
