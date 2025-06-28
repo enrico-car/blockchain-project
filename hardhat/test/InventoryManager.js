@@ -57,6 +57,8 @@ describe("InventoryManager", function () {
     await inventoryManager.setUserAuth(owner.address, true);
     await inventoryManager.setManufacturerAuth(owner.address, true);
 
+    await productManager.setInventoryManager(inventoryManager.target, true);
+
     return { inventoryManager, owner, otherAccount, productManager };
   }
 
@@ -114,7 +116,7 @@ describe("InventoryManager", function () {
             .to.be.revertedWith("Not authorized to use this function");
         await expect(inventoryManager.connect(otherAccount).getInventory(otherAccount.address))
             .to.be.revertedWith("Not authorized to use this function");
-        await expect(inventoryManager.connect(otherAccount).addToManufacturerInventory(sampleInventory.lotId, sampleInventory.quantity))
+        await expect(inventoryManager.connect(otherAccount).addToManufacturerInventory(sampleInventory.lotId))
             .to.be.revertedWith("Only the manufacturer is allowed to use this function");
       });
     });
@@ -203,14 +205,14 @@ describe("InventoryManager", function () {
     it("Should allow manufacturer to add lot to its own inventory", async function () {
         const { inventoryManager, owner } = await loadFixture(deployInventoryManagerWithLot);
 
-        await expect(inventoryManager.addToManufacturerInventory(sampleInventory.lotId, sampleInventory.quantity)).to
+        await expect(inventoryManager.addToManufacturerInventory(sampleInventory.lotId)).to
           .emit(inventoryManager, "AddedToManufacturerInventory").withArgs(owner.address, sampleInventory.lotId, sampleInventory.quantity);
 
         const [previousLotIds, previousQuantities] = await inventoryManager.getInventory(owner.address);
         expect(previousLotIds[0]).to.equal(sampleInventory.lotId);
         expect(previousQuantities[0]).to.equal(sampleInventory.quantity);
 
-        await inventoryManager.addToManufacturerInventory(sampleInventory.lotId, 1);
+        await inventoryManager.addToManufacturerInventory(sampleInventory.lotId);
 
         const [lotIds, quantities] = await inventoryManager.getInventory(owner.address);
         expect(lotIds[0]).to.equal(sampleInventory.lotId);
