@@ -54,20 +54,7 @@ const addProduct = async (req, res) => {
     // Parse fields from req.body; parse JSON strings for array fields
     for (const field of allowedFields) {
       if (req.body[field] !== undefined) {
-        if (
-          ["materials", "design", "specifications", "composition", "env_impact",
-           "repair_replace", "reuse_recycling", "maintenance", "substance_of_concern"].includes(field)
-        ) {
-          // parse JSON strings for arrays, if sent as stringified JSON
-          try {
-            productData[field] = JSON.parse(req.body[field]);
-          } catch {
-            // fallback if parsing fails
-            productData[field] = [];
-          }
-        } else {
-          productData[field] = req.body[field];
-        }
+        productData[field] = req.body[field];
       }
     }
 
