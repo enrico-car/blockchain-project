@@ -1,5 +1,6 @@
 const {
   loadFixture,
+  time,
 } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
 const { expect } = require("chai");
 
@@ -14,7 +15,8 @@ const sampleProduct = {
 const sampleLot = {
   lotId: 1,
   LotDetails: {
-    expirationDate: "0000-00-01",
+    timestamp: "0000-00-01T00:00:00Z",
+    expirationDate: "0000-00-02",
     totalQuantity: 100,
     unitPrice: 10,
     productId: sampleProduct.productId,
@@ -30,6 +32,7 @@ describe("ProductManager", function () {
     await productManager.waitForDeployment();
 
     await productManager.setUserAuth(owner.address, true);
+    await productManager.setInventoryManager(owner.address, true);
 
     return { productManager, owner, otherAccount };
   }
@@ -76,10 +79,16 @@ describe("ProductManager", function () {
       await expect(productManager.connect(otherAccount).removeProduct(sampleProduct.productId)).to.be.revertedWith(
         "Not authorized to use this function"
       );
-      await expect(productManager.connect(otherAccount).createLot(sampleLot.lotId, sampleLot.LotDetails)).to.be.revertedWith(
+      await expect(productManager.connect(otherAccount).createLot(
+        sampleLot.lotId, sampleLot.LotDetails.timestamp, sampleLot.LotDetails.expirationDate,
+        sampleLot.LotDetails.totalQuantity, sampleLot.LotDetails.unitPrice, sampleLot.LotDetails.productId
+      )).to.be.revertedWith(
         "Not authorized to use this function"
       );
       await expect(productManager.connect(otherAccount).removeLot(sampleLot.lotId)).to.be.revertedWith(
+        "Not authorized to use this function"
+      );
+      await expect(productManager.connect(otherAccount).markLotAsProduced(sampleLot.lotId)).to.be.revertedWith(
         "Not authorized to use this function"
       );
     });
@@ -167,11 +176,14 @@ describe("ProductManager", function () {
     });
   });
 
-  describe("Lot operations", function () {  // TODO: Creare nuova fixture per i test dei lotti, in cui creo già un prodotto
+  describe("Lot operations", function () {
     it("Should prevent the creation of lots that refer to a product not existing", async function () {
       const { productManager, owner } = await loadFixture(deployProductManager);
 
-      await expect(productManager.createLot(sampleLot.lotId, sampleLot.LotDetails)).to.be.revertedWith(
+      await expect(productManager.createLot(
+        sampleLot.lotId, sampleLot.LotDetails.timestamp, sampleLot.LotDetails.expirationDate,
+        sampleLot.LotDetails.totalQuantity, sampleLot.LotDetails.unitPrice, sampleLot.LotDetails.productId
+      )).to.be.revertedWith(
         "Product does not exists"
       );
     });
@@ -179,9 +191,16 @@ describe("ProductManager", function () {
     it("Should allow authorized users to create new lots", async function () {
       const { productManager, owner } = await loadFixture(deployProductManagerWithProduct);
 
-      await expect(productManager.createLot(sampleLot.lotId, sampleLot.LotDetails)).to.emit(productManager, "LotCreated")
-        .withArgs(sampleLot.lotId, sampleLot.LotDetails.productId, 
-          [sampleLot.LotDetails.expirationDate, sampleLot.LotDetails.totalQuantity, sampleLot.LotDetails.unitPrice, sampleLot.LotDetails.productId]);
+      await expect(productManager.createLot(
+        sampleLot.lotId, sampleLot.LotDetails.timestamp, sampleLot.LotDetails.expirationDate,
+        sampleLot.LotDetails.totalQuantity, sampleLot.LotDetails.unitPrice, sampleLot.LotDetails.productId
+      )).to.emit(productManager, "LotCreated").withArgs(
+        sampleLot.lotId, sampleLot.LotDetails.productId, 
+        [
+          sampleLot.LotDetails.timestamp, sampleLot.LotDetails.expirationDate, sampleLot.LotDetails.totalQuantity, 
+          sampleLot.LotDetails.unitPrice, sampleLot.LotDetails.productId, false
+        ]
+      );
 
       expect(await productManager.productsIds(0)).to.equal(sampleLot.lotId);
       expect((await productManager.lots(sampleLot.lotId)).expirationDate)
@@ -197,9 +216,15 @@ describe("ProductManager", function () {
     it("Should prevent the creation of multiple lots with the same lot ID", async function () {
       const { productManager, owner } = await loadFixture(deployProductManagerWithProduct);
 
-      await productManager.createLot(sampleLot.lotId, sampleLot.LotDetails);
+      await productManager.createLot(
+        sampleLot.lotId, sampleLot.LotDetails.timestamp, sampleLot.LotDetails.expirationDate,
+        sampleLot.LotDetails.totalQuantity, sampleLot.LotDetails.unitPrice, sampleLot.LotDetails.productId
+      );
 
-      await expect(productManager.createLot(sampleLot.lotId, sampleLot.LotDetails)).to.be.revertedWith(
+      await expect(productManager.createLot(
+        sampleLot.lotId, sampleLot.LotDetails.timestamp, sampleLot.LotDetails.expirationDate,
+        sampleLot.LotDetails.totalQuantity, sampleLot.LotDetails.unitPrice, sampleLot.LotDetails.productId
+      )).to.be.revertedWith(
         "Lot already exists"
       );
     });
@@ -207,7 +232,10 @@ describe("ProductManager", function () {
     it("Should prevent the removal of lots not existing", async function () {
       const { productManager, owner } = await loadFixture(deployProductManagerWithProduct);
       
-      await productManager.createLot(0, sampleLot.LotDetails);  // Create a different lot, used to have 100% coverage
+      await productManager.createLot(
+        0, sampleLot.LotDetails.timestamp, sampleLot.LotDetails.expirationDate,
+        sampleLot.LotDetails.totalQuantity, sampleLot.LotDetails.unitPrice, sampleLot.LotDetails.productId
+      );  // Create a different lot, used to have 100% coverage
 
       await expect(productManager.removeLot(sampleLot.lotId)).to.be.revertedWith(
         "Lot not found"
@@ -217,7 +245,10 @@ describe("ProductManager", function () {
     it("Should allow autherized users to remove existing lots", async function () {
       const { productManager, owner } = await loadFixture(deployProductManagerWithProduct);
 
-      await productManager.createLot(sampleLot.lotId, sampleLot.LotDetails);
+      await productManager.createLot(
+        sampleLot.lotId, sampleLot.LotDetails.timestamp, sampleLot.LotDetails.expirationDate,
+        sampleLot.LotDetails.totalQuantity, sampleLot.LotDetails.unitPrice, sampleLot.LotDetails.productId
+      );
       await expect(productManager.removeLot(sampleLot.lotId)).to.emit(productManager, "LotRemoved")
         .withArgs(sampleLot.lotId);
 
@@ -242,7 +273,10 @@ describe("ProductManager", function () {
     it("Should provide information about existing lots", async function () {
       const { productManager, owner, otherAccount } = await loadFixture(deployProductManagerWithProduct);
 
-      await productManager.createLot(sampleLot.lotId, sampleLot.LotDetails);
+      await productManager.createLot(
+        sampleLot.lotId, sampleLot.LotDetails.timestamp, sampleLot.LotDetails.expirationDate,
+        sampleLot.LotDetails.totalQuantity, sampleLot.LotDetails.unitPrice, sampleLot.LotDetails.productId
+      );
       
       expect((await productManager.getLot(sampleLot.lotId)).lotIdentification)
         .to.equal(sampleLot.LotDetails.lotIdentification);
@@ -263,12 +297,56 @@ describe("ProductManager", function () {
     it("Should provide information about every lot", async function () {
       const { productManager, owner, otherAccount } = await loadFixture(deployProductManagerWithProduct);
 
-      await productManager.createLot(sampleLot.lotId, sampleLot.LotDetails);
+      await productManager.createLot(
+        sampleLot.lotId, sampleLot.LotDetails.timestamp, sampleLot.LotDetails.expirationDate,
+        sampleLot.LotDetails.totalQuantity, sampleLot.LotDetails.unitPrice, sampleLot.LotDetails.productId
+      );
       
       const [lotIds, DPPs] = await productManager.getAllLots();
       expect(lotIds[0]).to.equal(sampleLot.lotId);
       expect(DPPs[0].materials).to.equal(sampleLot.LotDetails.materials);
 
+    });
+  });
+
+  describe("Lot production operations", async function () {
+    it("Should prevent the removal of lots not existing", async function () {
+      const { productManager, owner, otherAccount } = await loadFixture(deployProductManagerWithProduct);
+
+      await expect(productManager.connect(owner).markLotAsProduced(sampleLot.lotId)).to.be.revertedWith(
+        "Lot does not exist"
+      );
+    });
+
+    it("Should prevent multiple production of the same lot", async function () {
+      const { productManager, owner, otherAccount } = await loadFixture(deployProductManagerWithProduct);
+
+      await productManager.createLot(
+        sampleLot.lotId, sampleLot.LotDetails.timestamp, sampleLot.LotDetails.expirationDate,
+        sampleLot.LotDetails.totalQuantity, sampleLot.LotDetails.unitPrice, sampleLot.LotDetails.productId
+      );
+
+      await productManager.markLotAsProduced(sampleLot.lotId);
+
+      await expect(productManager.connect(owner).markLotAsProduced(sampleLot.lotId)).to.be.revertedWith(
+        "Lot already marked as produced"
+      );
+    });
+
+    it("Should allow autherized users to produce a lot", async function () {
+      const { productManager, owner, otherAccount } = await loadFixture(deployProductManagerWithProduct);
+
+      await productManager.createLot(
+        sampleLot.lotId, sampleLot.LotDetails.timestamp, sampleLot.LotDetails.expirationDate,
+        sampleLot.LotDetails.totalQuantity, sampleLot.LotDetails.unitPrice, sampleLot.LotDetails.productId
+      );
+
+      const lotBefore = await productManager.getLot(sampleLot.lotId);
+      expect(lotBefore.hasBeenProduced).to.equal(false);
+
+      await productManager.connect(owner).markLotAsProduced(sampleLot.lotId);
+      const lotAfter = await productManager.getLot(sampleLot.lotId);
+      expect(lotAfter.hasBeenProduced).to.equal(true);
     });
   });
 

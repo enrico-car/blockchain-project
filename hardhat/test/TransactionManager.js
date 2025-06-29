@@ -16,7 +16,8 @@ const sampleProduct = {
 const sampleLot = {
   lotId: 1,
   LotDetails: {
-    expirationDate: "0000-00-01",
+    timestamp: "0000-00-01T00:00:00Z",
+    expirationDate: "0000-00-02",
     totalQuantity: 100,
     unitPrice: 10,
     productId: sampleProduct.productId,
@@ -26,7 +27,8 @@ const sampleLot = {
 const sampleLot2 = {
   lotId: 2,
   LotDetails: {
-    expirationDate: "0000-00-02",
+    timestamp: "0000-00-02T00:00:00Z",
+    expirationDate: "0000-00-03",
     totalQuantity: 200,
     unitPrice: 20,
     productId: sampleProduct.productId,
@@ -35,12 +37,12 @@ const sampleLot2 = {
 
 const sampleInventory = {
     lotId: sampleLot.lotId,
-    quantity: 50,
+    quantity: sampleLot.LotDetails.totalQuantity,
 }
 
 const sampleInventory2 = {
     lotId: sampleLot2.lotId,
-    quantity: 50,
+    quantity: sampleLot2.LotDetails.totalQuantity,
 }
 
 describe("TransactionManager", function () {
@@ -68,13 +70,20 @@ describe("TransactionManager", function () {
 
     await productManager.connect(manufacturer).createProduct(sampleProduct.productId, sampleProduct.DPP);
 
-    await productManager.connect(manufacturer).createLot(sampleLot.lotId, sampleLot.LotDetails);
-    await productManager.connect(manufacturer).createLot(sampleLot2.lotId, sampleLot2.LotDetails);
+    await productManager.connect(manufacturer).createLot(
+      sampleLot.lotId, sampleLot.LotDetails.timestamp, sampleLot.LotDetails.expirationDate,
+      sampleLot.LotDetails.totalQuantity, sampleLot.LotDetails.unitPrice, sampleLot.LotDetails.productId
+    );
+    await productManager.connect(manufacturer).createLot(
+      sampleLot2.lotId, sampleLot2.LotDetails.timestamp, sampleLot2.LotDetails.expirationDate,
+      sampleLot2.LotDetails.totalQuantity, sampleLot2.LotDetails.unitPrice, sampleLot2.LotDetails.productId
+    );
 
     await inventoryManager.setManufacturerAuth(manufacturer.address, true);
+    await productManager.setInventoryManager(inventoryManager.target, true);
 
-    await inventoryManager.connect(manufacturer).addToManufacturerInventory(sampleInventory.lotId, sampleInventory.quantity);
-    await inventoryManager.connect(manufacturer).addToManufacturerInventory(sampleInventory2.lotId, sampleInventory2.quantity);
+    await inventoryManager.connect(manufacturer).addToManufacturerInventory(sampleInventory.lotId);
+    await inventoryManager.connect(manufacturer).addToManufacturerInventory(sampleInventory2.lotId);
 
     await cashbackToken.setMinterAuth(transactionManager.target, true);
 

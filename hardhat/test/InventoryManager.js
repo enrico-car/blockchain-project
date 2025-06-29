@@ -14,7 +14,8 @@ const sampleProduct = {
 const sampleLot = {
   lotId: 1,
   LotDetails: {
-    expirationDate: "0000-00-01",
+    timestamp: "0000-00-01T00:00:00Z",
+    expirationDate: "0000-00-02",
     totalQuantity: 100,
     unitPrice: 10,
     productId: sampleProduct.productId,
@@ -24,7 +25,8 @@ const sampleLot = {
 const sampleLot2 = {
   lotId: 2,
   LotDetails: {
-    expirationDate: "0000-00-02",
+    timestamp: "0000-00-02T00:00:00Z",
+    expirationDate: "0000-00-03",
     totalQuantity: 200,
     unitPrice: 20,
     productId: sampleProduct.productId,
@@ -56,6 +58,7 @@ describe("InventoryManager", function () {
 
     await inventoryManager.setUserAuth(owner.address, true);
     await inventoryManager.setManufacturerAuth(owner.address, true);
+    await productManager.setInventoryManager(inventoryManager.target, true);
 
     await productManager.setInventoryManager(inventoryManager.target, true);
 
@@ -66,8 +69,14 @@ describe("InventoryManager", function () {
     const { inventoryManager, owner, otherAccount, productManager } = await loadFixture(deployInventoryManager);
 
     await productManager.createProduct(sampleProduct.productId, sampleProduct.DPP);
-    await productManager.createLot(sampleLot.lotId, sampleLot.LotDetails);
-    await productManager.createLot(sampleLot2.lotId, sampleLot2.LotDetails);
+    await productManager.createLot(
+      sampleLot.lotId, sampleLot.LotDetails.timestamp, sampleLot.LotDetails.expirationDate,
+      sampleLot.LotDetails.totalQuantity, sampleLot.LotDetails.unitPrice, sampleLot.LotDetails.productId
+    );
+    await productManager.createLot(
+      sampleLot2.lotId, sampleLot2.LotDetails.timestamp, sampleLot2.LotDetails.expirationDate,
+      sampleLot2.LotDetails.totalQuantity, sampleLot2.LotDetails.unitPrice, sampleLot2.LotDetails.productId
+    );
 
     return { inventoryManager, owner, otherAccount, productManager };
   }
@@ -116,7 +125,7 @@ describe("InventoryManager", function () {
             .to.be.revertedWith("Not authorized to use this function");
         await expect(inventoryManager.connect(otherAccount).getInventory(otherAccount.address))
             .to.be.revertedWith("Not authorized to use this function");
-        await expect(inventoryManager.connect(otherAccount).addToManufacturerInventory(sampleInventory.lotId))
+        await expect(inventoryManager.connect(otherAccount).addToManufacturerInventory(sampleLot.lotId))
             .to.be.revertedWith("Only the manufacturer is allowed to use this function");
       });
     });
@@ -205,18 +214,18 @@ describe("InventoryManager", function () {
     it("Should allow manufacturer to add lot to its own inventory", async function () {
         const { inventoryManager, owner } = await loadFixture(deployInventoryManagerWithLot);
 
-        await expect(inventoryManager.addToManufacturerInventory(sampleInventory.lotId)).to
-          .emit(inventoryManager, "AddedToManufacturerInventory").withArgs(owner.address, sampleInventory.lotId, sampleInventory.quantity);
+        await expect(inventoryManager.addToManufacturerInventory(sampleLot.lotId)).to
+          .emit(inventoryManager, "AddedToManufacturerInventory").withArgs(owner.address, sampleLot.lotId, sampleLot.LotDetails.totalQuantity);
 
         const [previousLotIds, previousQuantities] = await inventoryManager.getInventory(owner.address);
-        expect(previousLotIds[0]).to.equal(sampleInventory.lotId);
-        expect(previousQuantities[0]).to.equal(sampleInventory.quantity);
+        expect(previousLotIds[0]).to.equal(sampleLot.lotId);
+        expect(previousQuantities[0]).to.equal(sampleLot.LotDetails.totalQuantity);
 
-        await inventoryManager.addToManufacturerInventory(sampleInventory.lotId);
+        await inventoryManager.addToManufacturerInventory(sampleLot2.lotId);
 
         const [lotIds, quantities] = await inventoryManager.getInventory(owner.address);
-        expect(lotIds[0]).to.equal(sampleInventory.lotId);
-        expect(quantities[0]).to.equal(sampleInventory.quantity + 1);
+        expect(lotIds[1]).to.equal(sampleLot2.lotId);
+        expect(quantities[1]).to.equal(sampleLot2.LotDetails.totalQuantity);
     });
   });
 

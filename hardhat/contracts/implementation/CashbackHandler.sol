@@ -23,7 +23,7 @@ contract CashbackHandler {
         require(cashbackToken.allowance(msg.sender, address(this)) >= MIN_CASHBACK_AMOUNT, 
             string.concat("Contract must be approved to spend at least 100 ", cashbackToken.symbol()));
 
-        // Cjheck if the caller has enough token
+        // Check if the caller has enough token
         require(cashbackToken.balanceOf(msg.sender) >= MIN_CASHBACK_AMOUNT, 
             string.concat("You must have at least 100 ", cashbackToken.symbol(), " to redeem a cashback"));
 
