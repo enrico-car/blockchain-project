@@ -186,7 +186,8 @@ export default {
     try {
       // await getOutgoingTransactions()
       // console.log("TR: ", await getOutgoingTransactions())
-      this.getOutgoingTransactions()
+      // this.getOutgoingTransactions()
+      this.getIncomingTransactions()
     } catch (e) {
       console.log(e)
     }
@@ -243,6 +244,9 @@ export default {
     async getIncomingTransactions() {
       try {
         const result = await getIncomingTransactions()
+
+        this.pendingRequests = result
+
         console.log('Transaction successful:', result)
       } catch (e) {
         console.log('Error:', e)
@@ -253,7 +257,7 @@ export default {
         const result = await getOutgoingTransactions()
 
         //TODO modificare
-        this.pendingRequests = result
+        // this.pendingRequests = result
 
         console.log('Transaction successful:', result)
       } catch (e) {

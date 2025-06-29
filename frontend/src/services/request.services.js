@@ -59,14 +59,26 @@ export async function getIncomingTransactions() {
     const { abi, address } = response.data
 
     const provider = new Web3Provider(window.ethereum)
-
-    const contract = new ethers.Contract(address, abi, provider)
+    const signer = provider.getSigner()
+    const contract = new ethers.Contract(address, abi, signer)
 
     const receipt = await contract.getIncomingTransactions()
 
     console.log(receipt)
 
-    return receipt
+    const formatted = receipt.map(transaction => {
+      return {
+        from:String(transaction[0]),
+        to:String(transaction[1]),
+        lotIds: transaction[2], // TODO mappare meglio
+        quantities: transaction[3],
+        timestamp: parseInt(transaction[4]),
+        detailsHash: String(transaction[5])
+      }
+    })
+    // console.log(formatted)
+
+    return formatted
   } catch (err) {
     console.error('Error in getIncomingTransactions:', err)
     throw err
