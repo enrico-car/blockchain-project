@@ -7,8 +7,8 @@
     <div class="product-info">
       <h3 class="product-name">{{ product.productIdentification }}</h3>
       <div class="product-id-container">
-        <span class="product-id-label">ID:</span>
-        <span class="product-id-value" :title="product.id">{{ shortId(product.id) }}</span>
+        <span class="product-id-label">Lot ID:</span>
+        <span class="product-id-value" :title="product.id">{{ shortId(product.lotId) }}</span>
         <button class="copy-id-button" @click="copyId">Copy</button>
         <span v-if="copied" class="copy-feedback">Copied!</span>
       </div>
@@ -91,7 +91,7 @@ export default {
         return id.length > 18 ? `${id.slice(0, 8)}...${id.slice(-8)}` : id
     },
     copyId() {
-      navigator.clipboard.writeText(this.product.id).then(() => {
+      navigator.clipboard.writeText(this.product.lotId).then(() => {
         this.copied = true
         setTimeout(() => {
           this.copied = false

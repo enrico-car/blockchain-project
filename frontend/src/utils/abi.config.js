@@ -21,8 +21,8 @@ export async function processLots(lots) {
     // Leggi tutti i prodotti dal database
     const dbProducts = await getAllDbProducts();
   
-    console.log("PP", dbProducts)
-    console.log(ids)
+    // console.log("PP", dbProducts)
+    // console.log(ids)
 
     // Filtra i prodotti dal db che hanno id negli ids estratti
     const filteredDbProducts = dbProducts.filter(prod => ids.includes(prod.id));
@@ -41,6 +41,7 @@ export async function processLots(lots) {
         expireDate: lot[0],
         quantity: parseFloat(lot[2]),
         unitPrice: parseInt(lot[1]),
+        lotId: String(lot[6]),
         id: id,
       };
   
@@ -52,7 +53,7 @@ export async function processLots(lots) {
       };
     });
 
-    // console.log("M:", merged)
+    console.log("M:", merged)
   
     return merged;
   }

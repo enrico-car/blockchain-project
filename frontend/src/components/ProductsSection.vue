@@ -133,14 +133,20 @@ export default {
        return
       }
       console.log(ids)
-      const results = await Promise.all(ids.map(element => getLot(element)));
-      // console.log("LOT RES: ", results)
+      const results = await Promise.all(
+        ids.map(async (element) => {
+          const lot = await getLot(element);
+          return {
+            ...lot,      // copia tutte le proprietà dell'oggetto restituito da getLot
+            6: element,  // aggiungi la proprietà lotId con l'id corrente
+          };
+        })
+      );
 
-      // const filteredProducts = db_prod.filter(prod => ids.includes(prod.id));
+      console.log("resulto: ", results)
+      
       console.log(await processLots(results))
       this.products = await processLots(results)
-
-      // console.log(db_prod)
 
     },
   },
