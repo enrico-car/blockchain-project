@@ -13,7 +13,7 @@ contract CashbackHandler {
 
     event CashbackRedeemed ( address indexed user, uint256 amount );
 
-    uint256 public constant MIN_CASHBACK_AMOUNT = 100 * 10**18;
+    uint256 public constant MIN_CASHBACK_AMOUNT = 100;
 
     // Magari possiamo lasciare questo come base e avere una nuova versione parametrica, 
     //      da usare come esempio di implementazione V2 da mostrare con il Proxy

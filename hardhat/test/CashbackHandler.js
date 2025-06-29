@@ -3,7 +3,7 @@ const {
 } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
 const { parseEther } = require("ethers");
 const { expect } = require("chai");
-const  MIN_CASHBACK_AMOUNT = parseEther("100"); // 100 tokens with 18 decimals
+const  MIN_CASHBACK_AMOUNT = 100; // 100 tokens
 
 describe("CashbackHandler", function () {
   async function deployCashbackHandler() {

@@ -35,6 +35,11 @@ module.exports = buildModule("DeployModule", (m) => {
 
   // get Mint authorization to Transactin manager
   m.call(token, "setMinterAuth", [transactionManager, true]);
+
+  m.call(token, "setMinterAuth", ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", true], { id: "authDeployerAsMinter" });
+  var amount = 800;
+  m.call(token, "mint", ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", amount.toString()], { id: "mintTokens" });
+
   // Give the transactionManager permission to handle users inventory
   m.call(inventoryManager, "setUserAuth", [transactionManager, true]);
 
