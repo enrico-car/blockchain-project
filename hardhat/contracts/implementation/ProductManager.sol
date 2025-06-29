@@ -29,9 +29,21 @@ contract ProductManager is Ownable {
 
     struct DPP {
 
-        string productIdentification;
-        string materials;
-        // TODO: Aggiungere altri dati del DPP
+        uint256 productIdentification;
+        uint256 materials;
+        uint256 design;
+        uint256 specifications;
+        uint256 lifecycle;
+        uint256 installation_maintenance;
+        uint256 composition;
+        uint256 microplastics;
+        uint256 env_impact;
+        uint256 transport_packaging;
+        uint256 sustainability;
+        uint256 maintenance;
+        uint256 warranty;
+        uint256 energy_recovery;
+        uint256 substance_of_concern;
 
     }
 
@@ -47,7 +59,7 @@ contract ProductManager is Ownable {
     
     function createProduct (uint256 productId, DPP calldata dpp) external onlyAuthorized {
 
-        require(bytes(products[productId].productIdentification).length == 0, "Product already exists");    // Check if product already exists
+        require(products[productId].productIdentification == 0, "Product already exists");    // Check if product already exists
         products[productId] = dpp;      // Add the new product
         productsIds.push(productId);
 
@@ -74,7 +86,7 @@ contract ProductManager is Ownable {
 
     function getProduct (uint256 productId) external view returns (DPP memory) {
 
-        require(bytes(products[productId].productIdentification).length != 0, "Product does not exists");   // Check if product exists
+        require(products[productId].productIdentification != 0, "Product does not exists");   // Check if product exists
         return products[productId];
 
     }
@@ -106,7 +118,7 @@ contract ProductManager is Ownable {
     function createLot(uint256 lotId, string calldata timestamp, string calldata expirationDate, uint256 totalQuantity, uint256 unitPrice, uint256 productId) external onlyAuthorized {
 
         require(bytes(lots[lotId].expirationDate).length == 0, "Lot already exists");   // Check if lot already exists
-        require(bytes(products[productId].productIdentification).length != 0, "Product does not exists"); // Check if product exists
+        require(products[productId].productIdentification != 0, "Product does not exists"); // Check if product exists
 
         LotDetails memory lotDetails  = LotDetails({                      // Create new lot
             timestamp: timestamp,

@@ -1,15 +1,28 @@
 const {
   loadFixture,
 } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
-const { ZeroHash } = require("ethers");
+const { keccak256, toUtf8Bytes, ZeroHash } = require("ethers");
 const { expect } = require("chai");
 const e = require("express");
 
 const sampleProduct = {
   productId: 1,
   DPP: {
-    productIdentification: "Sample Product",
-    materials: "Sample Materials",
+    productIdentification: BigInt(keccak256(toUtf8Bytes("Sample Product"))),
+    materials: BigInt(keccak256(toUtf8Bytes("Sample Materials"))),
+    design: BigInt(keccak256(toUtf8Bytes("Sample Design"))),
+    specifications: 0n,
+    lifecycle: 0n,
+    installation_maintenance: 0n,
+    composition: 0n,
+    microplastics: 0n,
+    env_impact: 0n,
+    transport_packaging: 0n,
+    sustainability: 0n,
+    maintenance: 0n,
+    warranty: 0n,
+    energy_recovery: 0n,
+    substance_of_concern: 0n
   }
 };
 

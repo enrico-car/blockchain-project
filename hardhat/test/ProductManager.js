@@ -3,12 +3,26 @@ const {
   time,
 } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
 const { expect } = require("chai");
+const { keccak256, toUtf8Bytes } = require("ethers");
 
 const sampleProduct = {
   productId: 1,
   DPP: {
-    productIdentification: "Sample Product",
-    materials: "Sample Materials",
+    productIdentification: BigInt(keccak256(toUtf8Bytes("Sample Product"))),
+    materials: BigInt(keccak256(toUtf8Bytes("Sample Materials"))),
+    design: BigInt(keccak256(toUtf8Bytes("Sample Design"))),
+    specifications: 0n,
+    lifecycle: 0n,
+    installation_maintenance: 0n,
+    composition: 0n,
+    microplastics: 0n,
+    env_impact: 0n,
+    transport_packaging: 0n,
+    sustainability: 0n,
+    maintenance: 0n,
+    warranty: 0n,
+    energy_recovery: 0n,
+    substance_of_concern: 0n
   }
 };
 
@@ -99,7 +113,14 @@ describe("ProductManager", function () {
       const { productManager, owner } = await loadFixture(deployProductManager);
 
       await expect(productManager.createProduct(sampleProduct.productId, sampleProduct.DPP)).to.emit(productManager, "ProductCreated")
-        .withArgs(sampleProduct.productId, [sampleProduct.DPP.productIdentification, sampleProduct.DPP.materials]);
+        .withArgs(sampleProduct.productId, 
+          [
+            sampleProduct.DPP.productIdentification, sampleProduct.DPP.materials, sampleProduct.DPP.design,
+            sampleProduct.DPP.specifications, sampleProduct.DPP.lifecycle, sampleProduct.DPP.installation_maintenance,
+            sampleProduct.DPP.composition, sampleProduct.DPP.microplastics, sampleProduct.DPP.env_impact,
+            sampleProduct.DPP.transport_packaging, sampleProduct.DPP.sustainability, sampleProduct.DPP.maintenance,
+            sampleProduct.DPP.warranty, sampleProduct.DPP.energy_recovery, sampleProduct.DPP.substance_of_concern
+          ]);
 
       expect(await productManager.productsIds(0)).to.equal(sampleProduct.productId);
       expect((await productManager.products(sampleProduct.productId)).productIdentification)
