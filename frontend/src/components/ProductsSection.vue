@@ -128,17 +128,22 @@ export default {
       // Call the db to display the product info
       // this.products = await getAllDbProducts()
       // console.log(await getInventory())
-      let ids = (await getInventory()).lotIds
-      if (ids.length === 0){
-       return
+      let { lotIds, quantities } = await getInventory();
+      let ids = lotIds;
+
+      if (ids.length === 0) {
+        return;
       }
-      console.log(ids)
+
+      console.log(ids);
+
       const results = await Promise.all(
-        ids.map(async (element) => {
+        ids.map(async (element, index) => {
           const lot = await getLot(element);
           return {
-            ...lot,      // copia tutte le proprietà dell'oggetto restituito da getLot
-            6: element,  // aggiungi la proprietà lotId con l'id corrente
+            ...lot,           // proprietà originali del lot
+            6: element,   // aggiungi l'id
+            7: quantities[index], // aggiungi la quantità corrispondente
           };
         })
       );

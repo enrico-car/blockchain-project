@@ -53,10 +53,10 @@ export default {
       })
     },
     handleApprove() {
-      this.$emit('approve', this.request.id)
+      this.$emit('approve', this.request.from, this.request.detailsHash)
     },
     handleReject() {
-      this.$emit('reject', this.request.id)
+      this.$emit('reject', this.request.from, this.request.detailsHash)
     },
   },
 }

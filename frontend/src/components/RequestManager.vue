@@ -35,7 +35,7 @@
             @reject="handleReject"
           />
           <div v-if="pendingRequests.length === 0" class="empty-state">
-            <p>Nessuna richiesta pendente</p>
+            <p>No pending transactions</p>
           </div>
         </div>
       </section>
@@ -45,7 +45,7 @@
         <div class="requests-list">
           <MyRequestCard v-for="request in myRequests" :key="request.id" :request="request" />
           <div v-if="myRequests.length === 0" class="empty-state">
-            <p>Non hai ancora fatto richieste</p>
+            <p>You haven't made any requests yet</p>
           </div>
         </div>
       </section>
@@ -120,6 +120,7 @@ import {
   proposeTransaction,
   getIncomingTransactions,
   getOutgoingTransactions,
+  respondToTransactionRequest,
 } from '@/services/request.services'
 
 // import AppFooter from './AppFooter.vue'
@@ -133,26 +134,26 @@ export default {
     return {
       // TODO remove and connect to the blockchain
       // Dummy request data
-      pendingRequests: [
-        {
-          id: 1,
-          productName: 'Request 1',
-          requesterName: 'Mario Rossi',
-          requestDate: '2024-01-15',
-        },
-        {
-          id: 2,
-          productName: 'Request 2',
-          requesterName: 'Laura Bianchi',
-          requestDate: '2024-01-14',
-        },
-        {
-          id: 3,
-          productName: 'Request 3',
-          requesterName: 'Giuseppe Verdi',
-          requestDate: '2024-01-13',
-        },
-      ],
+      pendingRequests: [],
+      //   {
+      //     id: 1,
+      //     productName: 'Request 1',
+      //     requesterName: 'Mario Rossi',
+      //     requestDate: '2024-01-15',
+      //   },
+      //   {
+      //     id: 2,
+      //     productName: 'Request 2',
+      //     requesterName: 'Laura Bianchi',
+      //     requestDate: '2024-01-14',
+      //   },
+      //   {
+      //     id: 3,
+      //     productName: 'Request 3',
+      //     requesterName: 'Giuseppe Verdi',
+      //     requestDate: '2024-01-13',
+      //   },
+      // ],
       // Dati delle richieste dell'utente
       myRequests: [
         {
@@ -194,15 +195,25 @@ export default {
   },
   methods: {
     // TODO modify functions with real data
-    handleApprove(requestId) {
-      const index = this.pendingRequests.findIndex((req) => req.id === requestId)
+    async handleApprove(from, detailsHash) {
+      // console.log("from/detailsHash", from, detailsHash)
+      const index = this.pendingRequests.findIndex((req) => req.detailsHash === detailsHash)
+
+      // Approve the request
+      let result = await respondToTransactionRequest(from, detailsHash, true)
+
       if (index !== -1) {
         this.pendingRequests.splice(index, 1)
-        console.log(`Request ${requestId} approved`)
+        console.log(`Request ${detailsHash} approved`)
       }
     },
-    handleReject(requestId) {
-      const index = this.pendingRequests.findIndex((req) => req.id === requestId)
+    async handleReject(from, detailsHash) {
+      // console.log("from/detailsHash", from, detailsHash)
+      const index = this.pendingRequests.findIndex((req) => req.detailsHash === detailsHash)
+
+      // Approve the request
+      let result = await respondToTransactionRequest(from, detailsHash, false)
+
       if (index !== -1) {
         this.pendingRequests.splice(index, 1)
         console.log(`Request ${requestId} rejected`)
