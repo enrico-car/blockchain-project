@@ -57,8 +57,11 @@
 </template>
 
 <script>
+import { getAllDbProducts, getAllProducts, getLot, getProduct } from '@/services/product.services'
 import ProductCard from './ProductCard.vue'
 import defaultImage from '@/assets/logo.svg'
+import { getInventory } from '@/services/inventory.services'
+import { processLots } from '@/utils/abi.config'
 
 export default {
   components: {
@@ -66,28 +69,31 @@ export default {
   },
   data() {
     return {
-      products: [
-        {
-          id: 1,
-          name: 'Product 1',
-          quantity: 3,
-          image: defaultImage,
-        },
-        {
-          id: 2,
-          name: 'Product 2',
-          quantity: 8,
-          image: defaultImage,
-        },
-        {
-          id: 3,
-          name: 'Product 3',
-          quantity: 12,
-          image: defaultImage,
-        },
-      ],
+      products: [],
+      //   {
+      //     id: 1,
+      //     name: 'Product 1',
+      //     quantity: 3,
+      //     image: defaultImage,
+      //   },
+      //   {
+      //     id: 2,
+      //     name: 'Product 2',
+      //     quantity: 8,
+      //     image: defaultImage,
+      //   },
+      //   {
+      //     id: 3,
+      //     name: 'Product 3',
+      //     quantity: 12,
+      //     image: defaultImage,
+      //   },
+      // ],
       searchQuery: '',
     }
+  },
+  mounted() {
+    this.getProducts()
   },
   computed: {
     filteredProducts() {
@@ -95,7 +101,7 @@ export default {
 
       if (this.searchQuery.trim()) {
         const query = this.searchQuery.toLowerCase().trim()
-        filtered = filtered.filter((product) => product.name.toLowerCase().includes(query))
+        filtered = filtered.filter((product) => product.productIdentification.toLowerCase().includes(query))
       }
       return filtered
     },
@@ -115,6 +121,27 @@ export default {
 
       let product = this.products.find((p) => p.id === item.id)
       product.quantity = parseInt(product.quantity) - parseInt(item.amount)
+    },
+    async getProducts() {
+      // console.log(await getAllProducts())
+      // console.log(await getAllDbProducts())
+      // Call the db to display the product info
+      // this.products = await getAllDbProducts()
+      // console.log(await getInventory())
+      let ids = (await getInventory()).lotIds
+      if (ids.length === 0){
+       return
+      }
+      console.log(ids)
+      const results = await Promise.all(ids.map(element => getLot(element)));
+      // console.log("LOT RES: ", results)
+
+      // const filteredProducts = db_prod.filter(prod => ids.includes(prod.id));
+      console.log(await processLots(results))
+      this.products = await processLots(results)
+
+      // console.log(db_prod)
+
     },
   },
 }

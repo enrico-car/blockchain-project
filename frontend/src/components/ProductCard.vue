@@ -5,7 +5,7 @@
     </div>
 
     <div class="product-info">
-      <h3 class="product-name">{{ product.name }}</h3>
+      <h3 class="product-name">{{ product.productIdentification }}</h3>
       <div class="product-details">
         <div class="quantity-info">
           <span class="quantity-label">Quantity:</span>
@@ -49,7 +49,7 @@ export default {
         this.$emit('sell', { id: this.product.id, amount: this.sellAmount })
 
         // Alert for notification
-        alert('Sold ' + this.sellAmount + ' ' + this.product.name)
+        alert('Sold ' + this.sellAmount + ' ' + this.product.productIdentification)
 
         // Reset
         this.sellAmount = 0

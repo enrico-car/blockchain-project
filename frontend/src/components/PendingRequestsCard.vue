@@ -9,11 +9,11 @@
     <div class="card-body">
       <div class="requester-info">
         <span class="requester-label">From:</span>
-        <span class="requester-name">{{ request.requesterName }}</span>
+        <span class="requester-name">{{ request.from }}</span>
       </div>
       <div class="request-date">
         <span class="date-label">Date:</span>
-        <span class="date-value">{{ formatDate(request.requestDate) }}</span>
+        <span class="date-value">{{ formatDate(request.timestamp) }}</span>
       </div>
     </div>
 
@@ -31,6 +31,7 @@
 </template>
 
 <script>
+
 export default {
   props: {
     request: {
@@ -39,9 +40,13 @@ export default {
     },
   },
   emits: ['approve', 'reject'],
+  async mounted(){
+    // let result = await processLots(this.request.lotIds)
+    // console.log(result)
+  },
   methods: {
     formatDate(dateString) {
-      return new Date(dateString).toLocaleDateString('it-IT', {
+      return new Date(dateString*1000).toLocaleDateString('it-IT', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',

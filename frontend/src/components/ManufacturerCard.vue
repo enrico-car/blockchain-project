@@ -144,7 +144,15 @@
 
 <script>
 // TODO implementare una lista di prodotti collegata al database, in modo da poter far vedere i possibili prodotti in modo visivo
-import { createProduct, removeProduct, getProduct } from '@/services/product.services'
+import {
+  createProduct,
+  removeProduct,
+  getProduct,
+  getAllDbProducts,
+  getAllProducts,
+  createProductLot,
+  base64DataUrlToFile,
+} from '@/services/product.services'
 import defaultImage from '@/assets/logo.svg'
 import SuggestionInput from './SuggestionInput.vue'
 import MultiplierCard from './MultiplierCard.vue'
@@ -174,6 +182,10 @@ export default {
       products: ['Product 1', 'Product 2', 'Product 3', 'Product 4'],
     }
   },
+  async mounted() {
+    // TODO non riesco a vedere idati del prodotto dalla blockchain
+    // this.getProducts()
+  },
   methods: {
     creteProduct() {
       console.log('Creating product...')
@@ -184,6 +196,7 @@ export default {
     },
     showCreateLot() {
       this.createLot = true
+      this.getProducts()
     },
     closeCreateProduct() {
       this.createProduct = false
@@ -204,29 +217,33 @@ export default {
       this.newLot.totalQuantity = ''
       this.newLot.unitPrice = ''
     },
+    async getProducts() {
+      let products = await getAllDbProducts()
+      products = products.map((product) => ({
+        id: product.id,
+        name: product.productIdentification,
+      }))
+      this.products = products
+      console.log(products)
+    },
     async submitProductRequest() {
       console.log('Creating new product...')
       console.log('Name: ', this.newProduct.name, 'Material: ', this.newProduct.material)
       var dpp = {
         productIdentification: this.newProduct.name,
         materials: this.newProduct.material,
-        image: this.newProduct.image,
+        image: this.newProduct.image ? this.newProduct.image : base64DataUrlToFile("data:image/svg+xml;base64," + btoa(decodeURIComponent(defaultImage.split(',')[1])), "default.img"),
       }
 
-      await createProduct(dpp)
+      console.log(dpp)
 
-      //createproduct modifies dpp and so the final hash
-      // delete dpp.id;
-      // await removeProduct(dpp);
-
-      //id is present as generated from createProduct
-      await getProduct(dpp.id)
-
+      let result = await createProduct(dpp)
       this.resetProduct()
     },
     async submitLotRequest() {
       console.log('Creating new lot...')
       console.log(this.newLot)
+      console.log(await createProductLot(this.newLot))
 
       this.resetLot()
     },

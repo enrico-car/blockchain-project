@@ -24,6 +24,8 @@ module.exports = buildModule("DeployModule", (m) => {
     true,
   ]);
 
+  m.call(productManager, "setInventoryManager", [inventoryManager, true]);
+
   // Transaction manager
   const transactionManager = m.contract("TransactionManager", [
     productManager,

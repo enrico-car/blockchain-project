@@ -2,6 +2,7 @@ import { ethers } from 'ethers'
 import { Web3Provider } from '@ethersproject/providers'
 
 import axios from 'axios'
+import { loadContract } from '@/utils/abi.config'
 
 const contractName = 'TransactionManager'
 const ENDPOINT_URL = 'http://localhost:3000/api'
@@ -75,8 +76,9 @@ export async function getIncomingTransactions() {
 export async function getOutgoingTransactions() {
   try {
     //FIXME: put a .env for the endpoint
-    const response = await axios.get(`${ENDPOINT_URL}/contract/${contractName}`)
-    const { abi, address } = response.data
+    // const response = await axios.get(`${ENDPOINT_URL}/contract/${contractName}`)
+    // const { abi, address } = response.data
+    const [ abi, address ] = await loadContract("TransactionManager")
 
     const provider = new Web3Provider(window.ethereum)
     await provider.send('eth_requestAccounts', [])
@@ -85,9 +87,24 @@ export async function getOutgoingTransactions() {
 
     const receipt = await contract.getOutgoingTransactions()
 
+
+    // TODO effettuare dei controlli dul risultato di ritorno
+    // from, to, {prodId}, {qt}, timestamp, detailsHash
     console.log(receipt)
 
-    return receipt
+    const formatted = receipt.map(transaction => {
+      return {
+        from:String(transaction[0]),
+        to:String(transaction[1]),
+        lotIds: transaction[2], // TODO mappare meglio
+        quantities: transaction[3],
+        timestamp: parseInt(transaction[4]),
+        detailsHash: String(transaction[5])
+      }
+    })
+    // console.log(formatted)
+
+    return formatted
   } catch (err) {
     console.error('Error in getOutgoingTransactions:', err)
     throw err

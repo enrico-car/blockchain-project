@@ -184,7 +184,9 @@ export default {
   },
   async mounted() {
     try {
-      await getOutgoingTransactions()
+      // await getOutgoingTransactions()
+      // console.log("TR: ", await getOutgoingTransactions())
+      this.getOutgoingTransactions()
     } catch (e) {
       console.log(e)
     }
@@ -249,6 +251,10 @@ export default {
     async getOutgoingTransactions() {
       try {
         const result = await getOutgoingTransactions()
+
+        //TODO modificare
+        this.pendingRequests = result
+
         console.log('Transaction successful:', result)
       } catch (e) {
         console.log('Error:', e)

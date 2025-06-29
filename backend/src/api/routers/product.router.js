@@ -1,17 +1,19 @@
 const express = require("express");
 const multer = require("multer");
-const upload = multer(); 
+const upload = multer();
 
-const Product = require('../../models/Product')
+const Product = require("../../models/Product");
 
 const getProductInfo = async (req, res) => {
   const identification = req.params.productIdentification;
 
-  const productByIdentification = await Product.findOne({ productIdentification: identification });
+  const productByIdentification = await Product.findOne({
+    productIdentification: identification,
+  });
   const productById = await Product.findOne({ id: identification });
 
   if (!productByIdentification && !productById) {
-    return res.status(400).json({ message: 'No corresponding product' });
+    return res.status(400).json({ message: "No corresponding product" });
   }
 
   const product = productByIdentification || productById;
@@ -21,11 +23,37 @@ const getProductInfo = async (req, res) => {
 
   // If image exists, convert it to base64 data URL string
   if (product.image && product.image.data) {
-    productObj.image = `data:${product.image.contentType};base64,${product.image.data.toString('base64')}`;
+    productObj.image = `data:${
+      product.image.contentType
+    };base64,${product.image.data.toString("base64")}`;
   }
 
   // Return the full product object (with all fields)
   return res.status(200).json({ product: productObj, message: "success" });
+};
+
+const getAllProductInfo = async (req, res) => {
+  try {
+    const products = await Product.find({});
+
+    // Mappa ogni prodotto e converte in plain object + immagine base64
+    const productObjs = products.map((product) => {
+      const obj = product.toObject();
+
+      if (product.image && product.image.data) {
+        obj.image = `data:${
+          product.image.contentType
+        };base64,${product.image.data.toString("base64")}`;
+      }
+
+      return obj;
+    });
+
+    return res.status(200).json({ products: productObjs, message: "success" });
+  } catch (err) {
+    console.error("Error in getAllProductInfo:", err);
+    return res.status(500).json({ message: "Error in product retrival" });
+  }
 };
 
 const addProduct = async (req, res) => {
@@ -85,27 +113,32 @@ const deleteProduct = async (req, res) => {
 
     // if not found by id, try productIdentification
     if (!deletedProduct) {
-      deletedProduct = await Product.findOneAndDelete({ productIdentification: identifier });
+      deletedProduct = await Product.findOneAndDelete({
+        productIdentification: identifier,
+      });
     }
 
     if (!deletedProduct) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    return res.status(200).json({ message: "Product deleted successfully", product: deletedProduct });
+    return res.status(200).json({
+      message: "Product deleted successfully",
+      product: deletedProduct,
+    });
   } catch (error) {
     console.error("Error deleting product:", error);
     return res.status(500).json({ message: "Server error" });
   }
 };
 
-
 module.exports = function () {
-    const router = express.Router();
+  const router = express.Router();
 
-    router.get("/info/:productIdentification", getProductInfo);
-    router.delete("/delete/:productIdentification", deleteProduct);
-    router.post("/create", upload.single("image"), addProduct);
+  router.get("/info/:productIdentification", getProductInfo);
+  router.delete("/delete/:productIdentification", deleteProduct);
+  router.get("/all", getAllProductInfo);
+  router.post("/create", upload.single("image"), addProduct);
 
-    return router;
+  return router;
 };

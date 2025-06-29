@@ -1,7 +1,7 @@
 <template>
   <div class="autocomplete">
     <input
-      :value="modelValue"
+      :value="inputValue"
       @input="onInput"
       @focus="filterSuggestions"
       @blur="hideSuggestions"
@@ -14,11 +14,11 @@
     <ul v-if="showSuggestions && filtered.length" class="suggestions">
       <li
         v-for="(item, index) in filtered"
-        :key="index"
+        :key="item.id"
         @mousedown.prevent="selectSuggestion(item)"
         class="suggestion-item"
       >
-        {{ item }}
+        {{ item.name }}
       </li>
     </ul>
   </div>
@@ -30,37 +30,50 @@ export default {
   props: {
     modelValue: {
       type: String,
-      default: '',
+      default: '', // this is the product ID
     },
     suggestions: {
-      type: Array,
+      type: Array, // array of { id, name }
       required: true,
     },
   },
   data() {
     return {
+      inputValue: '', // this will hold the display name
       filtered: [],
       showSuggestions: false,
     }
   },
+  watch: {
+    // when modelValue (id) changes from outside, update the input display name
+    modelValue: {
+      immediate: true,
+      handler(newId) {
+        const selected = this.suggestions.find((p) => p.id === newId)
+        this.inputValue = selected ? selected.name : ''
+      },
+    },
+  },
   methods: {
     onInput(event) {
-      const value = event.target.value
-      this.$emit('update:modelValue', value)
-      this.filterSuggestions(value)
+      this.inputValue = event.target.value
+      this.filterSuggestions(this.inputValue)
     },
-    filterSuggestions(value) {
-      const search = value?.toLowerCase().trim() || ''
+    filterSuggestions(value = '') {
+      const search = typeof value === 'string' ? value.toLowerCase().trim() : ''
       if (!search) {
-        this.filtered = []
-        this.showSuggestions = false
+        // this.filtered = []
+        this.filtered = this.suggestions
+        this.showSuggestions = true
+        // this.showSuggestions = false
         return
       }
-      this.filtered = this.suggestions.filter((item) => item.toLowerCase().includes(search))
+      this.filtered = this.suggestions.filter((item) => item.name.toLowerCase().includes(search))
       this.showSuggestions = true
     },
     selectSuggestion(item) {
-      this.$emit('update:modelValue', item)
+      this.inputValue = item.name // display name
+      this.$emit('update:modelValue', item.id) // emit id
       this.showSuggestions = false
     },
     hideSuggestions() {
