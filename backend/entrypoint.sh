@@ -23,4 +23,6 @@ else
     echo "❌ Timeout: No ABI found after $MAX_WAIT seconds."
 fi
 
-npm run dev
+sleep 15
+
+npm run start
