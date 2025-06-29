@@ -197,7 +197,7 @@ export default {
 }
 
 .redeem-border {
-  display: inline-block; /* 🚀 Limita la larghezza al contenuto */
+  display: inline-block;
   padding: 0.75rem;
   border-radius: 6px;
   border: 1px solid #e2e8f0;
@@ -217,6 +217,17 @@ export default {
 
 .redeem-info.error {
   color: #e74c3c;
+}
+
+.submit-button {
+  max-width: 200px;
+}
+
+.redeem-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 300px;
 }
 
 /* Fade transition */

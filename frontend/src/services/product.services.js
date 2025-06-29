@@ -117,7 +117,7 @@ async function hashDppFields2(dpp) {
   for (const field of fields) {
     const value = dpp[field];
 
-    if (value === undefined || value === null) {
+    if (value === undefined || value === null || value === '') {
       hashedDpp[field] = 0n;
     } else {
       let toHash;

@@ -6,13 +6,36 @@
 
     <div class="product-info">
       <h3 class="product-name">{{ product.productIdentification }}</h3>
+      <div class="product-id-container">
+        <span class="product-id-label">ID:</span>
+        <span class="product-id-value" :title="product.id">{{ shortId(product.id) }}</span>
+        <button class="copy-id-button" @click="copyId">Copy</button>
+        <span v-if="copied" class="copy-feedback">Copied!</span>
+      </div>
       <div class="product-details">
         <div class="quantity-info">
           <span class="quantity-label">Quantity:</span>
           <span class="quantity-value">{{ product.quantity }}</span>
         </div>
       </div>
+      
+      <!--  -->
+      <div v-if="showModal" class="modal-overlay">
+        <div class="modal-content">
+          <button class="modal-close" @click="showModal = false">×</button>
+          <h2>Product Details</h2>
+          <ul class="modal-info-list">
+            <template v-for="key in infoKeys" :key="key">
+              <li v-if="product[key]">
+                <p>{{ formatLabel(key)}}: {{ product[key] }}</p>
+              </li>
+            </template>
+          </ul>
+        </div>
+      </div>
+
       <div class="sell-control">
+        <button class="more-info-button" @click="showModal = true">More info...</button>
         <div class="input-group">
           <input
             type="number"
@@ -40,9 +63,43 @@ export default {
   data() {
     return {
       sellAmount: 0,
+      copied: false,
+      showModal: false,
+      infoKeys: [
+        'productIdentification',
+        'materials',
+        'design',
+        'specifications',
+        'lifecycle',
+        'installation_maintenance',
+        'composition',
+        'microplastics',
+        'env_impact',
+        'transport_packaging',
+        'sustainability',
+        'maintenance',
+        'warranty',
+        'energy_recovery',
+        'substance_of_concern',
+      ],
     }
   },
   methods: {
+    shortId(id) {
+      if (!id) return ''
+        // Mostra i primi 4 e gli ultimi 4 caratteri (es: "abcd...1234")
+        return id.length > 18 ? `${id.slice(0, 8)}...${id.slice(-8)}` : id
+    },
+    copyId() {
+      navigator.clipboard.writeText(this.product.id).then(() => {
+        this.copied = true
+        setTimeout(() => {
+          this.copied = false
+        }, 1200) 
+      }).catch(() => {
+        console.error('Errore durante la copia')
+      })
+    },
     sell() {
       if (this.sellAmount > 0 && this.sellAmount <= this.product.quantity) {
         // TODO Logica per vendere da gestire nel padre, non possiamo modificare il prop da qui
@@ -56,6 +113,11 @@ export default {
       } else {
         alert('Invalid amount')
       }
+    },
+    formatLabel(key) {
+      return key
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, c => c.toUpperCase())
     },
   },
 }
@@ -72,6 +134,7 @@ export default {
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .product-card:hover {
@@ -104,7 +167,7 @@ export default {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .product-name {
@@ -183,4 +246,137 @@ export default {
 .sell-button:hover {
   background-color: #c0392b;
 }
+
+/* Container ID */
+
+.product-id-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #475569;
+}
+
+.product-id-label {
+  font-weight: 500;
+}
+
+.product-id-value {
+  font-family: monospace;
+  background: #f1f5f9;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.copy-id-button {
+  padding: 0.25rem 0.5rem;
+  font-size: 1rem;
+  background-color: #42b883;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.copy-id-button:hover {
+  background-color: #2c9c74;
+}
+
+.copy-feedback {
+  font-size: 0.75rem;
+  color: #16a34a;
+  transition: opacity 0.3s ease;
+  animation: fadeInOut 2s ease forwards;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+}
+
+/* More info modal display */
+
+.more-info-button {
+  /* margin-top: 0.5rem; */
+  padding: 0.4rem 0.75rem;
+  background-color: #42b883;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  max-width: 100px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  align-self: self-end;
+  margin-right: auto;
+}
+
+.more-info-button:hover {
+  background-color: #2c9c74;
+}
+
+.modal-overlay {
+  position: absolute; /* cambiato da fixed a absolute */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(30, 41, 59, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  border-radius: 12px; /* opzionale, per arrotondare gli angoli */
+}
+
+.modal-content {
+  max-width: 100%;  /* si adatta alla larghezza della card */
+  max-height: 100%; /* si adatta all'altezza della card */
+  overflow-y: auto;
+  /* rimuovi width: 90% e max-width: 600px, lascia che si adatti */
+  padding: 1rem;
+  border-radius: 12px;
+  background: white;
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: #e2e8f0;
+  border: none;
+  border-radius: 9999px;
+  width: 32px;
+  height: 32px;
+  font-size: 1.25rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.modal-close:hover {
+  background: #cbd5e1;
+}
+
+.modal-info-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+}
+
 </style>

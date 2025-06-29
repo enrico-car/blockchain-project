@@ -59,11 +59,16 @@
             <div class="vertical-divider"></div>
 
             <div class="form-right">
+
+              <div class="mandatory-separetor">
+                <p>Mandatory informations</p>
+              </div>
+
               <div class="form-group">
                 <label for="productName">Name</label>
                 <input
                   id="productName"
-                  v-model="newProduct.name"
+                  v-model="newProduct.productIdentification"
                   type="text"
                   placeholder="Enter product name"
                   required
@@ -73,10 +78,130 @@
                 <label for="productMaterial">Material</label>
                 <input
                   id="productMaterial"
-                  v-model="newProduct.material"
+                  v-model="newProduct.materials"
                   type="text"
                   placeholder="Enter product material"
                   required
+                />
+              </div>
+              <div class="optional-separetor">
+                <p>Optional informations</p>
+              </div>
+              <div class="form-group">
+                <label for="design">Design</label>
+                <input
+                  id="design"
+                  v-model="newProduct.design"
+                  type="text"
+                  placeholder="Enter product design"
+                />
+              </div>
+              <div class="form-group">
+                <label for="specifications">Specifications</label>
+                <input
+                  id="specifications"
+                  v-model="newProduct.specifications"
+                  type="text"
+                  placeholder="Enter product specifications"
+                />
+              </div>
+              <div class="form-group">
+                <label for="lifecycle">Lifecycle</label>
+                <input
+                  id="lifecycle"
+                  v-model="newProduct.lifecycle"
+                  type="text"
+                  placeholder="Enter product lifecycle"
+                />
+              </div>
+              <div class="form-group">
+                <label for="installation_maintenance">Installation</label>
+                <input
+                  id="installation_maintenance"
+                  v-model="newProduct.installation_maintenance"
+                  type="text"
+                  placeholder="Enter product Installation"
+                />
+              </div>
+              <div class="form-group">
+                <label for="composition">Composition</label>
+                <input
+                  id="composition"
+                  v-model="newProduct.composition"
+                  type="text"
+                  placeholder="Enter product composition"
+                />
+              </div>
+              <div class="form-group">
+                <label for="microplastics">Microplastics</label>
+                <input
+                  id="microplastics"
+                  v-model="newProduct.microplastics"
+                  type="text"
+                  placeholder="Enter product microplastics"
+                />
+              </div>
+              <div class="form-group">
+                <label for="env_impact">Env impact</label>
+                <input
+                  id="env_impact"
+                  v-model="newProduct.env_impact"
+                  type="text"
+                  placeholder="Enter product env impact"
+                />
+              </div>
+              <div class="form-group">
+                <label for="transport_packaging">Transport packaging</label>
+                <input
+                  id="transport_packaging"
+                  v-model="newProduct.transport_packaging"
+                  type="text"
+                  placeholder="Enter product transport packaging"
+                />
+              </div>
+              <div class="form-group">
+                <label for="sustainability">Sustainability</label>
+                <input
+                  id="sustainability"
+                  v-model="newProduct.sustainability"
+                  type="text"
+                  placeholder="Enter product sustainability"
+                />
+              </div>
+              <div class="form-group">
+                <label for="maintenance">Maintenance</label>
+                <input
+                  id="maintenance"
+                  v-model="newProduct.maintenance"
+                  type="text"
+                  placeholder="Enter product maintenance"
+                />
+              </div>
+              <div class="form-group">
+                <label for="warranty">Warranty</label>
+                <input
+                  id="warranty"
+                  v-model="newProduct.warranty"
+                  type="text"
+                  placeholder="Enter product warranty"
+                />
+              </div>
+              <div class="form-group">
+                <label for="energy_recovery">energy/recovery</label>
+                <input
+                  id="energy_recovery"
+                  v-model="newProduct.energy_recovery"
+                  type="text"
+                  placeholder="Enter product Energy/Recovery"
+                />
+              </div>
+              <div class="form-group">
+                <label for="substance_of_concern">Substance of concern</label>
+                <input
+                  id="substance_of_concern"
+                  v-model="newProduct.substance_of_concern"
+                  type="text"
+                  placeholder="Enter product substance of concern"
                 />
               </div>
             </div>
@@ -130,7 +255,7 @@
             v-model="newLot.unitPrice"
             type="text"
             placeholder="Enter unit price"
-            required
+            require
           />
         </div>
         <div class="modal-actions">
@@ -168,8 +293,21 @@ export default {
       createProduct: false,
       createLot: false,
       newProduct: {
-        name: '',
-        material: '',
+        productIdentification: '',
+        materials: '',
+        design: '',
+        specifications: '',
+        lifecycle: '',
+        installation_maintenance: '',
+        composition: '',
+        microplastics: '',
+        env_impact: '',
+        transport_packaging: '',
+        sustainability: '',
+        maintenance: '',
+        warranty: '',
+        energy_recovery: '',
+        substance_of_concern: '',
       },
       newLot: {
         expirationDate: '',
@@ -207,8 +345,21 @@ export default {
       this.resetLot()
     },
     resetProduct() {
-      this.newProduct.name = ''
-      this.newProduct.material = ''
+      this.newProduct.productIdentification = ''
+      this.newProduct.materials = ''
+      this.newProduct.design = ''
+      this.newProduct.specifications = ''
+      this.newProduct.lifecycle = ''
+      this.newProduct.installation_maintenance = ''
+      this.newProduct.composition = ''
+      this.newProduct.microplastics = ''
+      this.newProduct.env_impact = ''
+      this.newProduct.transport_packaging = ''
+      this.newProduct.sustainability = ''
+      this.newProduct.maintenance = ''
+      this.newProduct.warranty = ''
+      this.newProduct.energy_recovery = ''
+      this.newProduct.substance_of_concern = ''
       this.removeImage()
     },
     resetLot() {
@@ -228,24 +379,25 @@ export default {
     },
     async submitProductRequest() {
       console.log('Creating new product...')
-      console.log('Name: ', this.newProduct.name, 'Material: ', this.newProduct.material)
-      var dpp = {
-        productIdentification: this.newProduct.name,
-        materials: this.newProduct.material,
+      console.log('Name: ', this.newProduct.productIdentification, 'Material: ', this.newProduct.materials)
+      
+      let dpp = {
+        ...this.newProduct,
         image: this.newProduct.image ? this.newProduct.image : base64DataUrlToFile("data:image/svg+xml;base64," + btoa(decodeURIComponent(defaultImage.split(',')[1])), "default.img"),
       }
 
       console.log(dpp)
 
       let result = await createProduct(dpp)
-      this.resetProduct()
+      
+      this.closeCreateProduct()
     },
     async submitLotRequest() {
       console.log('Creating new lot...')
       console.log(this.newLot)
       console.log(await createProductLot(this.newLot))
 
-      this.resetLot()
+      this.closeCreateLot()
     },
     handleImageUpload(event) {
       const file = event.target.files[0]
@@ -375,7 +527,7 @@ export default {
 }
 .form-group {
   display: flex;
-  padding: 1.5rem;
+  padding: 0.5rem;
   gap: 1rem;
   align-items: center;
 }
@@ -450,6 +602,19 @@ export default {
   color: #2c3e50;
 }
 
+.optional-separetor{
+  border-bottom: 1px solid #e2e8f0;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-size: 16px
+}
+
+.mandatory-separetor{
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 1rem;
+  font-size: 16px
+}
+
 /* Divider style */
 
 .form-row {
@@ -465,6 +630,9 @@ export default {
 }
 
 .form-right {
+  overflow-y: auto; 
+  max-height: 50vh;
+  padding-left: 1rem;
   flex: 2; /* 2 parti su 3 */
   min-width: 0;
 }
