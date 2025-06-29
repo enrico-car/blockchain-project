@@ -36,6 +36,11 @@ module.exports = buildModule("DeployModule", (m) => {
   // get Mint authorization to Transactin manager
   m.call(token, "setMinterAuth", [transactionManager, true]);
 
+  m.call(transactionManager, "setUserAuth", [
+    "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", // Change with env
+    true,
+  ]);
+
   m.call(token, "setMinterAuth", ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", true], { id: "authDeployerAsMinter" });
   var amount = 800 * 10 ** 18;
   m.call(token, "mint", ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", amount.toString()], { id: "mintTokens" });

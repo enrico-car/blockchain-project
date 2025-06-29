@@ -3,7 +3,7 @@
     <div class="left-part">
       <div class="counter-section">
         <div class="stat-card">
-          <span class="stat-number">{{ 1 }}</span>
+          <span class="stat-number">{{ actualMultiplierAmount }}</span>
           <span class="stat-label">Multiplier</span>
         </div>
       </div>
@@ -31,32 +31,39 @@
 </template>
 
 <script>
+import { getRewardMultiplier, setRewardMultiplier } from '@/services/cashback.services'
+
 export default {
   name: 'MultiplierCard',
   props: {},
   data() {
     return {
       showSuggestions: false,
+      actualMultiplierAmount: '',
       multiplierAmount: '',
       multiplierMessage: '',
       multiplierSuccess: null,
       messageTimeout: null,
     }
   },
+  async mounted(){
+    this.actualMultiplierAmount = await getRewardMultiplier();
+  },
   methods: {
-    submitChangeRequest() {
-      // Reset timeout if already active
-      if (this.messageTimeout) clearTimeout(this.messageTimeout)
-
-      if (this.multiplierAmount && !isNaN(this.multiplierAmount)) {
-        this.multiplierMessage = 'Multiplier changed successfully!'
+    async submitChangeRequest() {
+      //blockchain request
+      if(await setRewardMultiplier(this.multiplierAmount)){
+        //cashback request ok
+        this.multiplierMessage = 'Multiplier request sent successfully!'
         this.multiplierSuccess = true
       } else {
-        this.multiplierMessage = 'Error: please enter a valid multiplier'
+        //some error
+        this.multiplierMessage = 'Error: it was not possible to fulfill the request!'
         this.multiplierSuccess = false
       }
-
-      this.multiplierAmount = ''
+      
+      // Reset timeout if already active
+      if (this.messageTimeout) clearTimeout(this.messageTimeout)
 
       // Auto-hide message after 3 seconds
       this.messageTimeout = setTimeout(() => {
@@ -64,6 +71,9 @@ export default {
         this.multiplierSuccess = null
       }, 3000)
     },
+    async getRewardMultiplier(){
+      return await getRewardMultiplier();
+    }
   },
 }
 </script>

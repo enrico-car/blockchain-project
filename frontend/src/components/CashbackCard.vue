@@ -5,8 +5,8 @@
       <div class="left-part">
         <div class="counter-section">
           <div class="stat-card">
-            <span class="stat-number">{{ 1 }}</span>
-            <span class="stat-label">Token name</span>
+            <span class="stat-number">{{ balance }}</span>
+            <span class="stat-label">CSHBK</span>
           </div>
         </div>
       </div>
@@ -14,11 +14,7 @@
       <div class="right-part">
         <h1 class="redeem-title">Redeem your discounts</h1>
         <form @submit.prevent="submitLotRequest" class="redeem-form">
-          <div class="input-section">
-            <input type="text" v-model="redeemAmount" placeholder="Insert amount" required />
-            <button type="submit" class="submit-button">Create Request</button>
-          </div>
-
+          <button type="submit" class="submit-button">Create Request</button>
           <!-- Reddem status -->
           <transition name="fade">
             <div class="redeem-border" v-if="redeemMessage">
@@ -37,6 +33,7 @@
 
 <script>
 import RedeemHistory from './RedeemHistory.vue'
+import { redeemCashback, getTokenBalance } from '@/services/cashback.services'
 
 export default {
   name: 'CashbackCard',
@@ -47,6 +44,7 @@ export default {
   data() {
     return {
       query: '',
+      balance: -1,
       filtered: [],
       showSuggestions: false,
       redeemAmount: '',
@@ -59,20 +57,24 @@ export default {
       ],
     }
   },
+  async mounted(){
+    this.balance = await getTokenBalance();
+  },
   methods: {
-    submitLotRequest() {
-      // Reset timeout if already active
-      if (this.messageTimeout) clearTimeout(this.messageTimeout)
-
-      if (this.redeemAmount && !isNaN(this.redeemAmount)) {
+    async submitLotRequest() {
+      //blockchain request
+      if(await redeemCashback()){
+        //cashback request ok
         this.redeemMessage = 'Redeem request sent successfully!'
         this.redeemSuccess = true
       } else {
-        this.redeemMessage = 'Error: please enter a valid amount.'
+        //some error
+        this.redeemMessage = 'Error: it was not possible to fulfill the request!'
         this.redeemSuccess = false
       }
-
-      this.redeemAmount = ''
+      
+      // Reset timeout if already active
+      if (this.messageTimeout) clearTimeout(this.messageTimeout)
 
       // Auto-hide message after 3 seconds
       this.messageTimeout = setTimeout(() => {
@@ -80,6 +82,9 @@ export default {
         this.redeemSuccess = null
       }, 3000)
     },
+    async getTokenBalance(){
+      return await getTokenBalance();
+    }
   },
 }
 </script>
