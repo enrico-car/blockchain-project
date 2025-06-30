@@ -3,7 +3,7 @@
     <div class="login-header">
       <div class="logo-section">
         <!-- <div class="logo-icon"></div> -->
-        <h1 class="app-title">Boh (Cambiare nome)</h1>
+        <h1 class="app-title">PharmaChain</h1>
       </div>
     </div>
 

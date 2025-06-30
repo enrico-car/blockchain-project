@@ -53,7 +53,7 @@ export async function processLots(lots) {
       };
     });
 
-    console.log("M:", merged)
+    // console.log("M:", merged)
   
     return merged;
   }

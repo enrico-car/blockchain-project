@@ -12,6 +12,10 @@ import Cashback from '@/views/Cashback.vue'
 
 const routes = [
   {
+    path: '/',
+    redirect: '/login'
+  },
+  {
     path: '/home/:account',
     name: 'Home',
     component: Home,

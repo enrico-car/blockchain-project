@@ -1,10 +1,10 @@
 <template>
   <div class="request-manager">
     <div class="header-section">
-      <h1 class="main-title">Request Management</h1>
+      <h1 class="main-title">Transactions Management</h1>
       <button @click="openCreateModal" class="create-button">
         <span class="plus-icon">+</span>
-        Create Request
+        Create Transaction
       </button>
     </div>
     <!-- Tab Navigation -->
@@ -13,11 +13,11 @@
         @click="activeTab = 'pending'"
         :class="['tab-button', { active: activeTab === 'pending' }]"
       >
-        Pending Requests
+        Pending Transactions
         <span class="tab-count">{{ pendingRequests.length }}</span>
       </button>
       <button @click="activeTab = 'my'" :class="['tab-button', { active: activeTab === 'my' }]">
-        My Requests
+        My Transactions
         <span class="tab-count">{{ myRequests.length }}</span>
       </button>
     </div>
@@ -304,7 +304,7 @@ export default {
 
 .create-button {
   display: flex;
-  max-width: 200px;
+  max-width: 210px;
   align-items: center;
   gap: 0.5rem;
   background: linear-gradient(135deg, #42b883, #35495e);

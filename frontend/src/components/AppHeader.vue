@@ -4,7 +4,7 @@
       <div class="header-left">
         <div class="logo-section">
           <!-- <span class="logo-icon"></span> -->
-          <span class="app-name">Boh (Cambiare nome)</span>
+          <span class="app-name">PharmaChain</span>
         </div>
       </div>
 
@@ -72,6 +72,9 @@ export default {
           })
           if (accounts.length > 0) {
             this.connectedAccount = accounts[0]
+          }else{
+            // Probably the user doesn't have Metamask or is not logged
+            this.$router.push('/login');
           }
         } catch (error) {
           console.error('Error getting accounts:', error)
@@ -96,17 +99,42 @@ export default {
   },
   mounted() {
     this.checkConnectedAccount()
+
+    if (window.ethereum) {
+      window.ethereum.on('accountsChanged', (accounts) => {
+        if (accounts.length > 0) {
+
+          this.connectedAccount = accounts[0];
+          window.location.reload();
+
+        } else {
+          this.connectedAccount = '';
+          this.$router.push('/login');
+        }
+      });
+    }
   },
 }
 
 // TODO spostare la parte relativa alla gestione dei wallet su un file apposito
 // try {
-//   window.ethereum.on('accountsChanged', function (accounts) {
-//     console.log('Account chainged to ', accounts[0])
+//   window.ethereum.on('accountsChanged', (accounts) => {
+//     if (accounts.length > 0) {
+//       this.connectedAccount = accounts[0];
 
-//     // TODO effettuare il logout e rieffettuare il login con il nuovo account
-//     location.reload()
-//   })
+//       // Se NON siamo sulla pagina di login, ricarichiamo
+//       if (this.$route.path !== '/login') {
+//         window.location.reload(); // ricarica la pagina
+//       } else {
+//         // Se siamo sulla pagina di login, niente reload
+//         console.log('Account changed while on login page');
+//       }
+//     } else {
+//       // Nessun account connesso → redirect a login
+//       this.connectedAccount = '';
+//       this.$router.push('/login');
+//     }
+//   });
 // } catch (error) {
 //   console.log(error)
 // }
