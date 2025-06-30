@@ -14,8 +14,16 @@
       </div>
       <div class="product-details">
         <div class="quantity-info">
-          <span class="quantity-label">Quantity:</span>
-          <span class="quantity-value">{{ product.quantity }}</span>
+          <div class="price-quantity">
+            <div>
+              <span class="quantity-label">Unit price: </span>
+              <span class="price-value">{{ product.unitPrice }}</span>
+            </div>
+            <div>
+              <span class="quantity-label">Quantity: </span>
+              <span class="quantity-value">{{ product.quantity }}</span>
+            </div>
+          </div>
         </div>
       </div>
       
@@ -88,7 +96,7 @@ export default {
     shortId(id) {
       if (!id) return ''
         // Mostra i primi 4 e gli ultimi 4 caratteri (es: "abcd...1234")
-        return id.length > 18 ? `${id.slice(0, 8)}...${id.slice(-8)}` : id
+        return id.length > 18 ? `${id.slice(0,9)}...${id.slice(-3)}` : id
     },
     copyId() {
       navigator.clipboard.writeText(this.product.lotId).then(() => {
@@ -377,6 +385,15 @@ export default {
   list-style: none;
   padding: 0;
   margin: 1rem 0 0;
+}
+
+.price-quantity {
+  display: flex;
+  gap: 4.8rem;
+}
+
+.price-value {
+  font-size: 18px;
 }
 
 </style>

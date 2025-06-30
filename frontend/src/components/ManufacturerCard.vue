@@ -394,9 +394,13 @@ export default {
     },
     async submitLotRequest() {
       console.log('Creating new lot...')
-      console.log(this.newLot)
-      console.log(await createProductLot(this.newLot))
+      console.log("new lot: ", this.newLot)
 
+      // Manage float input from 12.555 to 1255
+      let temp = { ...this.newLot };
+      temp.unitPrice = (parseFloat(this.newLot.unitPrice.replace(",",".")).toFixed(2))*100
+
+      console.log(await createProductLot(temp))
       this.closeCreateLot()
     },
     handleImageUpload(event) {

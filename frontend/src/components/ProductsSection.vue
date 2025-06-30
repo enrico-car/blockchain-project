@@ -11,11 +11,11 @@
           <div class="stats-section">
             <div class="stat-card">
               <span class="stat-number">{{ productStats.total }}</span>
-              <span class="stat-label">Products</span>
+              <span class="stat-label">Lots</span>
             </div>
             <div class="stat-card">
               <span class="stat-number">{{ productStats.totalQuantity }}</span>
-              <span class="stat-label">Total</span>
+              <span class="stat-label">Products</span>
             </div>
           </div>
         </div>
@@ -39,7 +39,7 @@
 
       <!-- Results Summary -->
       <div class="results-summary">
-        <span class="results-count"> {{ filteredProducts.length }} product found </span>
+        <span class="results-count"> {{ filteredProducts.length }} lots found </span>
         <span v-if="searchQuery" class="search-term"> for "{{ searchQuery }}" </span>
       </div>
 
@@ -70,25 +70,6 @@ export default {
   data() {
     return {
       products: [],
-      //   {
-      //     id: 1,
-      //     name: 'Product 1',
-      //     quantity: 3,
-      //     image: defaultImage,
-      //   },
-      //   {
-      //     id: 2,
-      //     name: 'Product 2',
-      //     quantity: 8,
-      //     image: defaultImage,
-      //   },
-      //   {
-      //     id: 3,
-      //     name: 'Product 3',
-      //     quantity: 12,
-      //     image: defaultImage,
-      //   },
-      // ],
       searchQuery: '',
     }
   },

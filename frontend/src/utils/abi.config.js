@@ -40,7 +40,7 @@ export async function processLots(lots) {
       const lotData = {
         expireDate: lot[0],
         quantity: parseInt(lot[7]),
-        unitPrice: parseInt(lot[1]),
+        unitPrice: (parseInt(lot[3])/100),
         lotId: String(lot[6]),
         id: id,
       };
@@ -53,7 +53,7 @@ export async function processLots(lots) {
       };
     });
 
-    // console.log("M:", merged)
+    console.log("M:", merged)
   
     return merged;
   }
