@@ -62,6 +62,7 @@ import ProductCard from './ProductCard.vue'
 import defaultImage from '@/assets/logo.svg'
 import { getInventory } from '@/services/inventory.services'
 import { processLots } from '@/utils/abi.config'
+import { registerSaleToCustomer } from '@/services/request.services'
 
 export default {
   components: {
@@ -97,11 +98,13 @@ export default {
     clearSearch() {
       this.searchQuery = ''
     },
-    sell(item) {
+    async sell(item) {
       console.log('Selling...')
-
-      let product = this.products.find((p) => p.id === item.id)
+      let result = await registerSaleToCustomer([item.id], [item.amount])
+      let product = this.products.find((p) => p.lotId === item.id)
       product.quantity = parseInt(product.quantity) - parseInt(item.amount)
+
+      alert("Sold " + item.amount + " " + product.productIdentification)
     },
     async getProducts() {
       // console.log(await getAllProducts())

@@ -145,3 +145,23 @@ export async function respondToTransactionRequest(from, detailsHash, response) {
     throw err
   }
 }
+
+export async function registerSaleToCustomer(lotIds, quantities) {
+
+  try {
+    const [ abi, address ] = await loadContract("TransactionManager")
+
+    const provider = new Web3Provider(window.ethereum)
+    await provider.send('eth_requestAccounts', [])
+    const signer = provider.getSigner()
+    const contract = new ethers.Contract(address, abi, signer)
+
+    const receipt = await contract.registerSaleToCustomer(lotIds, quantities)
+
+    return receipt
+  } catch (err) {
+    console.error('Error in getOutgoingTransactions:', err)
+    throw err
+  }
+}
+

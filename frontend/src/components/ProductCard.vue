@@ -111,10 +111,7 @@ export default {
     sell() {
       if (this.sellAmount > 0 && this.sellAmount <= this.product.quantity) {
         // TODO Logica per vendere da gestire nel padre, non possiamo modificare il prop da qui
-        this.$emit('sell', { id: this.product.id, amount: this.sellAmount })
-
-        // Alert for notification
-        alert('Sold ' + this.sellAmount + ' ' + this.product.productIdentification)
+        this.$emit('sell', { id: this.product.lotId, amount: this.sellAmount })
 
         // Reset
         this.sellAmount = 0
