@@ -12,7 +12,6 @@ RUN npm install
 
 EXPOSE 8545
 
-# Crea uno script entrypoint
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 

@@ -10,12 +10,16 @@
     <transition name="fade">
       <div v-if="isOpen" class="redeem-history-list">
         <div v-if="history.length > 0">
-          <div v-for="(item, index) in history" :key="index" class="redeem-entry">
+          <div
+            v-for="(item, index) in history"
+            :key="item.transactionHash"
+            class="redeem-entry"
+          >
             <span class="amount">{{ item.amount }} tokens</span>
             <span class="date">{{ formatDate(item.date) }}</span>
           </div>
         </div>
-        <div v-else>
+        <div v-else-if="!loading">
           <p>No redeem found</p>
         </div>
       </div>
@@ -24,18 +28,26 @@
 </template>
 
 <script>
+import { getCashbackHistory, getTransactionEvents } from '@/services/events.services.js'
+
 export default {
   name: 'RedeemHistory',
   props: {
-    history: {
-      type: Array,
-      required: true,
-    },
+    // history: {
+    //   type: Array,
+    //   required: true,
+    // },
   },
   data() {
     return {
       isOpen: false,
+      history: [],
+      loading: false,
+      error: null
     }
+  },
+  async mounted() {
+    await this.fetchHistory()
   },
   methods: {
     toggleList() {
@@ -44,6 +56,22 @@ export default {
     formatDate(dateStr) {
       const date = new Date(dateStr)
       return date.toLocaleString()
+    },
+    async fetchHistory() {
+      this.loading = true
+      this.error = null
+      try {
+        console.log('Fetching history...')
+        const data = await getCashbackHistory()
+        await getTransactionEvents()
+        this.history = data
+        if (data.length > 0) this.isOpen = true
+      } catch (err) {
+        this.error = err.message
+        console.error('Fetch error:', err)
+      } finally {
+        this.loading = false
+      }
     },
   },
 }
