@@ -1,36 +1,52 @@
 <template>
   <div class="pending-request-card">
-    <div class="card-header">
-      <div class="product-info">
-        <h4 class="product-name">{{ request.productName }}</h4>
-      </div>
-    </div>
+    <div class="card-main">
+      <!-- Info a sinistra -->
+      <div class="card-left">
+        <div class="card-header">
+          <div class="product-info">
+            <h4 class="product-name">{{ request.productName }}</h4>
+          </div>
+        </div>
 
-    <div class="card-body">
-      <div class="requester-info">
-        <span class="requester-label">From:</span>
-        <span class="requester-name">{{ request.from }}</span>
+        <div class="card-body">
+          <div class="requester-info">
+            <span class="requester-label">From:</span>
+            <span class="requester-name">{{ request.from }}</span>
+          </div>
+          <div class="requester-info">
+            <span class="requester-label">Content:</span>
+            <span class="requester-name">{{ contentString(this.names, this.qt) }}</span>
+          </div>
+          <div class="request-date">
+            <span class="date-label">Date:</span>
+            <span class="date-value">{{ formatDate(request.timestamp) }}</span>
+          </div>
+        </div>
       </div>
-      <div class="request-date">
-        <span class="date-label">Date:</span>
-        <span class="date-value">{{ formatDate(request.timestamp) }}</span>
-      </div>
-    </div>
 
-    <div class="card-actions">
-      <button @click="handleApprove" class="approve-button">
-        <span class="button-icon">✓</span>
-        Accept
-      </button>
-      <button @click="handleReject" class="reject-button">
-        <span class="button-icon">✕</span>
-        Decline
-      </button>
+      <!-- Bottoni a destra -->
+      <div class="card-right">
+        <div class="card-actions">
+          <button @click="handleApprove" class="approve-button">
+            <span class="button-icon">✓</span>
+            Accept
+          </button>
+          <button @click="handleReject" class="reject-button">
+            <span class="button-icon">✕</span>
+            Decline
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
+
 <script>
+
+import { getLot } from '@/services/product.services';
+import { processLots } from '@/utils/abi.config'
 
 export default {
   props: {
@@ -40,9 +56,36 @@ export default {
     },
   },
   emits: ['approve', 'reject'],
+  data() {
+    return {
+      names: '',
+      qt: '',
+    }
+  },
   async mounted(){
-    // let result = await processLots(this.request.lotIds)
-    // console.log(result)
+    console.log(this.request)
+    // let result = await processLots(this.request)
+
+    const results = await Promise.all(
+      this.request.lotIds.map(async (element, index) => {
+        const lot = await getLot(element);
+        return {
+          ...lot,           // proprietà originali del lot
+          6: element,   // aggiungi l'id
+          7: this.request.quantities[index], // aggiungi la quantità corrispondente
+        };
+      })
+    );
+
+    console.log(results)
+    let complete = await processLots(results)
+    console.log("Info: ", complete)
+
+    let names = complete.map((item) => { return item.productIdentification })
+    let qt = complete.map((item) => { return item.quantity })
+    this.names = names
+    this.qt = qt
+
   },
   methods: {
     formatDate(dateString) {
@@ -51,6 +94,13 @@ export default {
         month: 'short',
         day: 'numeric',
       })
+    },
+    contentString(names, qt) {
+      if (!names || !qt) return '';
+
+      return names
+        .map((name, i) => `${name}: ${qt[i]}`)
+        .join(', ');
     },
     handleApprove() {
       this.$emit('approve', this.request.from, this.request.detailsHash)
@@ -63,6 +113,24 @@ export default {
 </script>
 
 <style scoped>
+
+.card-main {
+  display: flex;
+}
+
+.card-left {
+  flex: 1;
+}
+
+.card-right {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 90px;
+}
+
 .pending-request-card {
   background: white;
   border: 1px solid #e2e8f0;
@@ -101,7 +169,7 @@ export default {
   margin-bottom: 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.8rem;
 }
 
 .requester-info,
@@ -114,14 +182,12 @@ export default {
 .requester-label,
 .date-label {
   font-size: 0.875rem;
-  color: #64748b;
-  font-weight: 500;
+  font-weight: 800;
 }
 
 .requester-name {
   font-size: 0.875rem;
   color: #2c3e50;
-  font-weight: 500;
 }
 
 .date-value {

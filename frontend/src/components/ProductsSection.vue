@@ -150,7 +150,7 @@ export default {
 
       console.log("resulto: ", results)
       
-      console.log(await processLots(results))
+      // console.log(await processLots(results))
       this.products = await processLots(results)
 
     },
