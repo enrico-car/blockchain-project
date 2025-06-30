@@ -68,6 +68,8 @@ export async function getTokenBalance(){
 export async function setRewardMultiplier(value){
     try {
         if(value < 0 || value > 100) {console.log("Multiplier must be lower than 100% and greater than 0%"); return false;}
+        
+        value = value * 100; //in order to account for decimal values
 
         const [abi, address] = await loadContract('TransactionManager');
 
@@ -77,6 +79,8 @@ export async function setRewardMultiplier(value){
         const contract = new ethers.Contract(address, abi, signer);
 
         //round value as smart contract allows only for int values
+        //this is useful when the user insert more than 2 decimal digits
+        //and we need to pass an unsigned value
         const tx = await contract.setRewardMultiplier(Math.round(value));
         await tx.wait();
 
@@ -102,11 +106,12 @@ export async function getRewardMultiplier(){
 
         const contract = new ethers.Contract(address, abi, signer);
 
-        const tx = await contract.rewardMultiplier();
+        const rawReward = await contract.rewardMultiplier();
+        const reward = ethers.formatUnits(rawReward, 2);
 
         console.log("Reward multiplier retrieved!");
 
-        return tx;
+        return reward;
     } catch (error) {
         console.log("Not possible to retrieve reward multiplier", error);
         return -1;

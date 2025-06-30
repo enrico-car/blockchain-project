@@ -25,4 +25,4 @@ fi
 
 sleep 15
 
-npm run start
+npm run dev
