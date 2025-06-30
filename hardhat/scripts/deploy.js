@@ -8,12 +8,27 @@ async function main() {
 
   const abisDir = "/app/shared/abis";
   const addressesFile = "/app/shared/deployedContracts.json";
+  const walletsFile = "/app/shared/wallets.json";
 
   if (!fs.existsSync(abisDir)) {
     fs.mkdirSync(abisDir, { recursive: true });
   }
 
   const addresses = {};
+
+  const signers = await hre.ethers.getSigners();
+  const walletDetails = [];
+
+  for (const signer of signers) {
+    const address = await signer.getAddress();
+    walletDetails.push({
+      address
+    });
+  }
+
+  fs.writeFileSync(walletsFile, JSON.stringify(walletDetails, null, 2));
+  console.log("✅ Wallet info saved in", walletsFile);
+
 
   for (const [name, contract] of Object.entries(deployment)) {
     addresses[name] = contract.target;
@@ -37,7 +52,7 @@ async function main() {
   // Salva gli address dei contratti
   fs.writeFileSync(addressesFile, JSON.stringify(addresses, null, 2));
   console.log("✅ Address saved in", addressesFile);
-  console.log("📂 ABI saved in", abisDir);
+  console.log("✅ ABI saved in", abisDir);
 }
 
 main().catch((error) => {

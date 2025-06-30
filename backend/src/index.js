@@ -8,6 +8,7 @@ const http = require("http");
 const fs = require("fs");
 const getApisRouter = require("./api/router");
 const bodyParser = require("body-parser");
+const path = require("path");
 
 // Blockchain Dependences
 const { Web3 } = require("web3");
@@ -77,6 +78,9 @@ app.get("/", async (req, res) => {
 http.createServer(app).listen(port, async () => {
   // await mongoose.connect(`mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@blockchain.vjumxip.mongodb.net/?retryWrites=true&w=majority&appName=Blockchain`);
   await mongoose.connect(`mongodb://mongodb:27017/blockchain`);
+
+  addWalletsToDB();
+
   console.log(`Server HTTP avviato su http://localhost:${port}`);
 });
 
@@ -85,3 +89,51 @@ process.on("SIGINT", () => {
   server.close();
   process.exit();
 });
+
+
+function addWalletsToDB() {
+  
+  const walletsFile = "wallets";
+  const walletPath = path.resolve(
+    __dirname,
+    "utils",
+    `${walletsFile}.json`
+  );
+  console.log("Wallets file path:", walletPath);
+
+  if (fs.existsSync(walletPath)) {
+    const walletsData = fs.readFileSync(walletPath, "utf8");
+    const wallets = JSON.parse(walletsData);
+
+    const userModelFile = "User";
+    const userModelPath = path.resolve(
+      __dirname,
+      "models",
+      `${userModelFile}.js`
+    );
+    const User = require(userModelPath);
+
+    wallets.forEach(async (userWallet, index) => {
+      let role = "retailer"; // Default role
+      try {
+        console.log(index, userWallet.address);
+        const existingUser = await User.findOne({ wallet: userWallet.address });
+        if (!existingUser) {
+          if(index == 0) {
+            role = "manufacturer";
+          }
+          else if(index >= 15) {
+            role = "pharmacy";
+          }
+          const newWallet = new User({wallet: userWallet.address, realName: `Name ${index}`, location: `Location ${index}`, type: role});
+          await newWallet.save();
+          console.log(`Added wallet: ${userWallet.address}`);
+        }
+      } catch (error) {
+        console.error(`Error adding wallet ${userWallet.address}:`, error);
+      }
+    });
+  } else {
+    console.log("No wallets file found to add to the database.");
+  }
+}
