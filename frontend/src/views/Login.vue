@@ -26,7 +26,8 @@ export default {
 
 <style>
 .login-card {
-  margin-top: 10rem;
+  margin-top: 8rem;
   justify-self: center;
+  display: grid;
 }
 </style>

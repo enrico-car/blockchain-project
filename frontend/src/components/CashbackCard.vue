@@ -127,6 +127,7 @@ export default {
 .counter-section {
   display: flex;
   gap: 1rem;
+  justify-content: center;
 }
 
 .separetor {
