@@ -2,6 +2,14 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 
+/**
+ * Endpoint used by the frontend to obtain the information about a contract in order
+ * to generate an istance handler.
+ * 
+ * @param {*} req contains the contract name
+ * @param {*} res will return the corresponding response with a given code
+ * @returns 200, abi and the address of the contract, 404 if the contract is not found in the list
+ */
 const getContractInfo = async (req, res) => {
   const contractName = req.params.name;
 
@@ -11,7 +19,6 @@ const getContractInfo = async (req, res) => {
 
   try {
     // Read ABI
-    // path builds an absolute path
     const abiPath = path.resolve(
       __dirname,
       "..",
@@ -21,7 +28,7 @@ const getContractInfo = async (req, res) => {
       `${contractName}.json`
     );
 
-    console.log(abiPath);
+    //console.log(abiPath);
 
     if (!fs.existsSync(abiPath)) {
       return res

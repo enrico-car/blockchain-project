@@ -1,3 +1,7 @@
+/**
+ * Mongoose schema about a product
+ * The schema is based on the attributes used by the DPP (Digital Product Passport)
+ */
 const mongoose = require('mongoose');
 
 const ProductSchema = new mongoose.Schema({

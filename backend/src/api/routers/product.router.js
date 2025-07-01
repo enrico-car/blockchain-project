@@ -4,24 +4,27 @@ const upload = multer();
 
 const Product = require("../../models/Product");
 
+/**
+ * Endpoint to obtain the clear information about a product, which are the ones defines in the Product model
+ * @param {*} req contains the product identification or the product id
+ * @param {*} res will return the corresponding response with a given code
+ * @returns 200 and the product info, 404 if no product has been found
+ */
 const getProductInfo = async (req, res) => {
+  //productIdentification might be the id or the name of the product
+  //try to retrieve a product in both cases and check if at least one gives a positive result
   const identification = req.params.productIdentification;
 
-  const productByIdentification = await Product.findOne({
-    productIdentification: identification,
-  });
+  const productByIdentification = await Product.findOne({ productIdentification: identification });
   const productById = await Product.findOne({ id: identification });
 
   if (!productByIdentification && !productById) {
-    return res.status(400).json({ message: "No corresponding product" });
+    return res.status(404).json({ message: "No corresponding product" });
   }
 
   const product = productByIdentification || productById;
-
-  // Convert mongoose doc to plain JS object
   const productObj = product.toObject();
-
-  // If image exists, convert it to base64 data URL string
+  //ff image exists, convert it to base64 data URL string
   if (product.image && product.image.data) {
     productObj.image = `data:${
       product.image.contentType
@@ -32,14 +35,19 @@ const getProductInfo = async (req, res) => {
   return res.status(200).json({ product: productObj, message: "success" });
 };
 
+/**
+ * Endpoint to obtain the clear information about all products
+ * @param {*} req
+ * @param {*} res will return the corresponding response with a given code
+ * @returns 200 and all the products info, 500 for any error
+ */
 const getAllProductInfo = async (req, res) => {
   try {
     const products = await Product.find({});
 
-    // Mappa ogni prodotto e converte in plain object + immagine base64
+    //convert each product into a js object + image base64
     const productObjs = products.map((product) => {
       const obj = product.toObject();
-
       if (product.image && product.image.data) {
         obj.image = `data:${
           product.image.contentType
@@ -56,8 +64,15 @@ const getAllProductInfo = async (req, res) => {
   }
 };
 
+/**
+ * Endpoint to add a new product by following the Product model
+ * @param {*} req contains the product infos
+ * @param {*} res will return a message based on the outcome
+ * @returns 200 if the product has been saved, 500 otherwise
+ */
 const addProduct = async (req, res) => {
   try {
+    //list of all possible fileds accepted but not all required
     const allowedFields = [
       "id",
       "productIdentification",
@@ -79,14 +94,14 @@ const addProduct = async (req, res) => {
 
     const productData = {};
 
-    // Parse fields from req.body; parse JSON strings for array fields
+    //parse fields from req.body; parse JSON strings for array fields
     for (const field of allowedFields) {
       if (req.body[field] !== undefined) {
         productData[field] = req.body[field];
       }
     }
 
-    // Handle uploaded image if any
+    //handle uploaded image if any
     if (req.file) {
       productData.image = {
         data: req.file.buffer,
@@ -104,6 +119,12 @@ const addProduct = async (req, res) => {
   }
 };
 
+/**
+ * Endpoint to delete a product
+ * @param {*} req contains the product identification
+ * @param {*} res will return a message based on the outcome
+ * @returns 200 if the product has been deleted, 404 if not found, 500 otherwise
+ */
 const deleteProduct = async (req, res) => {
   const identifier = req.params.productIdentification;
 
@@ -113,9 +134,7 @@ const deleteProduct = async (req, res) => {
 
     // if not found by id, try productIdentification
     if (!deletedProduct) {
-      deletedProduct = await Product.findOneAndDelete({
-        productIdentification: identifier,
-      });
+      deletedProduct = await Product.findOneAndDelete({ productIdentification: identifier });
     }
 
     if (!deletedProduct) {
