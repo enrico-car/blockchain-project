@@ -4,11 +4,17 @@
     <div class="card-body">
       <div v-if="request.isFrom" class="requester-info">
         <span class="requester-label">To:</span>
-        <span class="requester-name">{{ request.to}}</span>
+        <span class="requester-name">{{ request.to }}</span>
+        <div class="transaction-type">
+          <span class="icon"> ⬆ Out </span>
+        </div>
       </div>
       <div v-else class="requester-info">
         <span class="requester-label">From:</span>
         <span class="requester-name">{{ request.from }}</span>
+        <div class="transaction-type">
+          <span class="icon"> ⬇ In </span>
+        </div>
       </div>
       <div class="requester-info">
         <span class="requester-label">Content:</span>
@@ -103,9 +109,6 @@ export default {
         hour: '2-digit',
         minute: '2-digit'
       });
-    },
-    getTransactionDetails(){
-      // TODO get transaction details using the lotIds, riutilizzare il metodo usato per PendingRequestCard
     },
     contentString(names, qt) {
       if (!names || !qt) return '';
@@ -225,6 +228,31 @@ export default {
 .date-value {
   font-size: 0.875rem;
   color: #2c3e50;
+}
+
+/* Transaction Icon */
+
+.transaction-type {
+  display: flex; /* per centrare */
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;      
+  border-radius: 50%; 
+  /* padding: 1rem; */
+  /* width: 0.5rem;
+  height: 0.5rem; */
+  /* border: 2px solid transparent; */
+}
+
+.transaction-type {
+  /* background-color: #e6f9f0; */
+  color: #2ecc71;
+  border-color: #b6f0d5;
+}
+
+.icon {
+  display: inline-block;
+  transform: translateY(-1px); /* opzionale: verticale perfetta */
 }
 
 </style>
