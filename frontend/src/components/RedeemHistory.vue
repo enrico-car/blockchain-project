@@ -28,26 +28,38 @@
 </template>
 
 <script>
-import { getCashbackHistory, getTransactionEvents } from '@/services/events.services.js'
 
 export default {
   name: 'RedeemHistory',
   props: {
-    // history: {
-    //   type: Array,
-    //   required: true,
-    // },
+    history: {
+      type: Array,
+      required: true,
+    },
+  },
+  watch: {
+    history: {
+      handler(val) {
+        if ( val && val.length > 0 ) {
+          this.isOpen = true
+        } else {
+          this.isOpen = false
+        } 
+      },
+      deep: true,
+      immediate: true // se vuoi che venga chiamato anche al montaggio se ci sono già dati
+    }
   },
   data() {
     return {
       isOpen: false,
-      history: [],
+      // history: [],
       loading: false,
       error: null
     }
   },
   async mounted() {
-    await this.fetchHistory()
+    // await this.fetchHistory()
   },
   methods: {
     toggleList() {
@@ -57,22 +69,22 @@ export default {
       const date = new Date(dateStr)
       return date.toLocaleString()
     },
-    async fetchHistory() {
-      this.loading = true
-      this.error = null
-      try {
-        console.log('Fetching history...')
-        const data = await getCashbackHistory()
-        await getTransactionEvents()
-        this.history = data
-        if (data.length > 0) this.isOpen = true
-      } catch (err) {
-        this.error = err.message
-        console.error('Fetch error:', err)
-      } finally {
-        this.loading = false
-      }
-    },
+    // async fetchHistory() {
+    //   this.loading = true
+    //   this.error = null
+    //   try {
+    //     console.log('Fetching history...')
+    //     const data = await getCashbackHistory()
+    //     await getTransactionEvents()
+    //     this.history = data
+    //     if (data.length > 0) this.isOpen = true
+    //   } catch (err) {
+    //     this.error = err.message
+    //     console.error('Fetch error:', err)
+    //   } finally {
+    //     this.loading = false
+    //   }
+    // },
   },
 }
 </script>

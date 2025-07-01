@@ -122,6 +122,7 @@ import {
   getOutgoingTransactions,
   respondToTransactionRequest,
 } from '@/services/request.services'
+import { getTransactionEvents } from '@/services/events.services'
 
 // import AppFooter from './AppFooter.vue'
 
@@ -132,49 +133,8 @@ export default {
   },
   data() {
     return {
-      // TODO remove and connect to the blockchain
-      // Dummy request data
       pendingRequests: [],
-      //   {
-      //     id: 1,
-      //     productName: 'Request 1',
-      //     requesterName: 'Mario Rossi',
-      //     requestDate: '2024-01-15',
-      //   },
-      //   {
-      //     id: 2,
-      //     productName: 'Request 2',
-      //     requesterName: 'Laura Bianchi',
-      //     requestDate: '2024-01-14',
-      //   },
-      //   {
-      //     id: 3,
-      //     productName: 'Request 3',
-      //     requesterName: 'Giuseppe Verdi',
-      //     requestDate: '2024-01-13',
-      //   },
-      // ],
-      // Dati delle richieste dell'utente
-      myRequests: [
-        {
-          id: 101,
-          productName: 'Request 1',
-          requestDate: '2024-01-12',
-          status: 'pending',
-        },
-        {
-          id: 102,
-          productName: 'Request 2',
-          requestDate: '2024-01-10',
-          status: 'approved',
-        },
-        {
-          id: 103,
-          productName: 'Request 3',
-          requestDate: '2024-01-08',
-          status: 'rejected',
-        },
-      ],
+      myRequests: [],
       activeTab: 'pending',
       showCreateModal: false,
       newTransaction: {
@@ -185,10 +145,11 @@ export default {
   },
   async mounted() {
     try {
-      // await getOutgoingTransactions()
-      // console.log("TR: ", await getOutgoingTransactions())
-      // this.getOutgoingTransactions()
+
       this.getIncomingTransactions()
+
+      this.getMyTransactionStatus()
+
     } catch (e) {
       console.log(e)
     }
@@ -241,6 +202,9 @@ export default {
 
       try {
         const result = await proposeTransaction(this.newTransaction.to, this.newTransaction.entries)
+        // If the transaction proposal went smoothly update the transaction list
+        this.getMyTransactionStatus()
+
         console.log('Transaction successful:', result)
       } catch (e) {
         console.log('Error:', e)
@@ -275,6 +239,49 @@ export default {
         console.log('Error:', e)
       }
     },
+    getUniqueDetailsHashes(data) {
+      const uniqueSet = new Set();
+
+      data.forEach(item => {
+        if (item.detailsHash) {
+          uniqueSet.add(item.detailsHash);
+        }
+      });
+
+      return uniqueSet;
+    },
+    async getMyTransactionStatus(){
+      
+      const result = await getTransactionEvents()
+      const unique = this.getUniqueDetailsHashes(result)
+
+      // TODO potremmo troncare le transazini avvenute prima di una certa data o prendere solo le ultime 6/7
+
+      // Group events regarding the same transaction
+      let final = []
+      unique.forEach(element => {
+        let sametransaction = result.filter(item => item.detailsHash == element);
+        // console.log(sametransaction)
+        let index = sametransaction.findIndex(item => item.type === 'RejectedTransaction');
+        if (index !== -1) {
+          // console.log('Trovato!');
+          final.push(sametransaction[index])
+        } else {
+          index = sametransaction.findIndex(item => item.type === 'AcceptedTransaction');
+          if (index !== -1) {
+            final.push(sametransaction[index])
+          } else {
+            index = sametransaction.findIndex(item => item.type === 'AddedTransaction');
+            // console.log(sametransaction[index].isFrom)
+            if (index !== -1 && sametransaction[index].isFrom) {
+              final.push(sametransaction[index])
+            }
+          }
+        }
+      });
+      console.log(final)
+      this.myRequests = final
+    }
   },
 }
 </script>

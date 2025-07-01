@@ -1,5 +1,25 @@
 <template>
   <div class="my-request-card">
+
+    <div class="card-body">
+      <div v-if="request.isFrom" class="requester-info">
+        <span class="requester-label">To:</span>
+        <span class="requester-name">{{ request.to}}</span>
+      </div>
+      <div v-else class="requester-info">
+        <span class="requester-label">From:</span>
+        <span class="requester-name">{{ request.from }}</span>
+      </div>
+      <div class="requester-info">
+        <span class="requester-label">Content:</span>
+        <span class="requester-name">{{ contentString(this.names, this.qt) }}</span>
+      </div>
+      <div class="request-date">
+        <span class="date-label">Date:</span>
+        <span class="date-value">{{ formatDate(request.timestamp) }}</span>
+      </div>
+    </div>
+
     <div class="card-header">
       <div class="product-info">
         <h4 class="product-name">{{ request.productName }}</h4>
@@ -10,17 +30,14 @@
         </div>
       </div>
     </div>
-
-    <div class="card-body">
-      <div class="request-date">
-        <span class="date-label">Date:</span>
-        <span class="date-value">{{ formatDate(request.requestDate) }}</span>
-      </div>
-    </div>
   </div>
 </template>
 
 <script>
+
+import { getLot } from '@/services/product.services';
+import { processLots } from '@/utils/abi.config'
+
 export default {
   props: {
     request: {
@@ -28,32 +45,74 @@ export default {
       required: true,
     },
   },
+  data() {
+    return {
+      names: null,
+      qt: null,
+    };
+  },
   computed: {
     statusConfig() {
       const configs = {
-        pending: {
+        AddedTransaction: {
           label: 'Pending',
           class: 'status-pending',
         },
-        approved: {
+        AcceptedTransaction: {
           label: 'Approved',
           class: 'status-approved',
         },
-        rejected: {
+        RejectedTransaction: {
           label: 'Declined',
           class: 'status-rejected',
         },
       }
-      return configs[this.request.status] || configs.pending
+      return configs[this.request.type] || configs.AddedTransaction
     },
+  },
+  async mounted (){
+
+    // console.log(this.request)
+    
+    const results = await Promise.all(
+      this.request.lotIds.map(async (element, index) => {
+        const lot = await getLot(element);
+        return {
+          ...lot,           // proprietà originali del lot
+          6: element,   // aggiungi l'id
+          7: this.request.quantities[index], // aggiungi la quantità corrispondente
+        };
+      })
+    );
+
+    console.log(results)
+    let complete = await processLots(results)
+    console.log("Info: ", complete)
+
+    let names = complete.map((item) => { return item.productIdentification })
+    let qt = complete.map((item) => { return item.quantity })
+    this.names = names
+    this.qt = qt
   },
   methods: {
     formatDate(dateString) {
-      return new Date(dateString).toLocaleDateString('it-IT', {
+      return new Date(dateString).toLocaleString('it-IT', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
-      })
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    },
+    getTransactionDetails(){
+      // TODO get transaction details using the lotIds, riutilizzare il metodo usato per PendingRequestCard
+    },
+    contentString(names, qt) {
+      if (!names || !qt) return '';
+
+      return names
+        .map((name, i) => `${name}: ${qt[i]}`)
+        .join(', ');
     },
   },
 }
@@ -67,6 +126,10 @@ export default {
   padding: 1.25rem;
   transition: all 0.2s ease;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  flex-direction: row;
+  display: flex;
+  justify-content: space-between;
+;
 }
 
 .my-request-card:hover {
@@ -145,15 +208,23 @@ export default {
   gap: 0.5rem;
 }
 
-.date-label {
-  font-size: 0.875rem;
-  color: #64748b;
-  font-weight: 500;
+.requester-info,
+.request-date {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
+.requester-label,
+.date-label {
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+.requester-name,
 .date-value {
   font-size: 0.875rem;
   color: #2c3e50;
-  font-weight: 500;
 }
+
 </style>

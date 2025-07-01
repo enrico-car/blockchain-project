@@ -34,6 +34,7 @@
 <script>
 import RedeemHistory from './RedeemHistory.vue'
 import { redeemCashback, getTokenBalance } from '@/services/cashback.services'
+import { getCashbackHistory, getTransactionEvents } from '@/services/events.services.js'
 
 export default {
   name: 'CashbackCard',
@@ -51,14 +52,13 @@ export default {
       redeemMessage: '',
       redeemSuccess: null,
       messageTimeout: null,
-      redeemHistoryData: [
-        // { amount: 50, date: '2025-06-23T15:30:00Z', id: 'TX123', to: '0xABC123' },
-        // { amount: 30, date: '2025-06-22T11:00:00Z', id: 'TX456', to: '0xDEF456' },
-      ],
+      redeemHistoryData: [],
     }
   },
   async mounted(){
     this.balance = await getTokenBalance();
+    
+    this.fetchHistory();
   },
   methods: {
     async submitLotRequest() {
@@ -67,6 +67,11 @@ export default {
         //cashback request ok
         this.redeemMessage = 'Redeem request sent successfully!'
         this.redeemSuccess = true
+
+        // Ffetch the new balance fron the CashbackHandler contract
+        this.balance = await getTokenBalance();
+        this.fetchHistory();
+
       } else {
         //some error
         this.redeemMessage = 'Error: it was not possible to fulfill the request!'
@@ -84,6 +89,20 @@ export default {
     },
     async getTokenBalance(){
       return await getTokenBalance();
+    },
+    async fetchHistory() {
+      try {
+        console.log('Fetching history...')
+        const data = await getCashbackHistory()
+
+        this.redeemHistoryData = data
+        console.log(this.redeemHistoryData)
+      } catch (err) {
+        this.error = err.message
+        console.error('Fetch error:', err)
+      } finally {
+        this.loading = false
+      }
     }
   },
 }

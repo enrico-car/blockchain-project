@@ -81,6 +81,7 @@ export async function getTransactionEvents() {
               return {
                 ...base,
                 from: args.from,
+                isFrom: args.from.toLowerCase() === userAddress.toLowerCase(),
                 to: args.to,
                 detailsHash: args.detailsHash,
                 lotIds: tx.lotIds.map((id) => id.toString()),
@@ -101,6 +102,7 @@ export async function getTransactionEvents() {
     const filteredEvents = flatEvents.filter((event) => {
       return (
         event.from?.toLowerCase() === userAddress.toLowerCase() ||
+        event.to?.toLowerCase() === userAddress.toLowerCase() ||
         event.pharmacy?.toLowerCase() === userAddress.toLowerCase()
       )
     })
