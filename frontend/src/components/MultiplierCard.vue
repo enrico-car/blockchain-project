@@ -3,7 +3,7 @@
     <div class="left-part">
       <div class="counter-section">
         <div class="stat-card">
-          <span class="stat-number">{{ actualMultiplierAmount }}</span>
+          <span class="stat-number">{{ actualMultiplierAmount }} %</span>
           <span class="stat-label">Multiplier</span>
         </div>
       </div>
@@ -13,7 +13,7 @@
       <h1 class="multiplier-title">Change Cashback multiplier</h1>
       <form @submit.prevent="submitChangeRequest" class="redeem-form">
         <div class="input-section">
-          <input type="text" v-model="multiplierAmount" placeholder="Insert multiplier" required />
+          <input type="text" v-model="multiplierAmount" placeholder="Insert multiplier (%)" required />
           <button type="submit" class="submit-button">Change</button>
         </div>
 

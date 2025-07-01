@@ -14,7 +14,7 @@
       <div class="right-part">
         <h1 class="redeem-title">Redeem your discounts</h1>
         <form @submit.prevent="submitLotRequest" class="redeem-form">
-          <button type="submit" class="submit-button">Create Request</button>
+          <button type="submit" class="submit-button">Redeem now</button>
           <!-- Reddem status -->
           <transition name="fade">
             <div class="redeem-border" v-if="redeemMessage">

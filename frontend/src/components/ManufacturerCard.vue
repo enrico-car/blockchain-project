@@ -208,7 +208,7 @@
           </div>
           <div class="modal-actions">
             <button type="button" @click="closeCreateProduct" class="cancel-button">Cancel</button>
-            <button type="submit" class="submit-button">Create Request</button>
+            <button type="submit" class="submit-button">Create Product</button>
           </div>
         </form>
       </div>
@@ -260,7 +260,7 @@
         </div>
         <div class="modal-actions">
           <button type="button" @click="closeCreateLot" class="cancel-button">Cancel</button>
-          <button type="submit" class="submit-button">Create Request</button>
+          <button type="submit" class="submit-button">Create Lot</button>
         </div>
       </form>
     </div>

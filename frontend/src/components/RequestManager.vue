@@ -45,7 +45,7 @@
         <div class="requests-list">
           <MyRequestCard v-for="request in myRequests" :key="request.id" :request="request" />
           <div v-if="myRequests.length === 0" class="empty-state">
-            <p>You haven't made any requests yet</p>
+            <p>You haven't made any transaction yet</p>
           </div>
         </div>
       </section>
@@ -55,7 +55,7 @@
     <div v-if="showCreateModal" class="modal-overlay" @click="closeCreateModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h3>Create New Request</h3>
+          <h3>Create New Transaction</h3>
           <button @click="closeCreateModal" class="close-button">&times;</button>
         </div>
         <form @submit.prevent="submitRequest" class="modal-form">
@@ -104,7 +104,7 @@
 
           <div class="modal-actions">
             <button type="button" @click="closeCreateModal" class="cancel-button">Cancel</button>
-            <button type="submit" class="submit-button">Create Request</button>
+            <button type="submit" class="submit-button">Create Transaction</button>
           </div>
         </form>
       </div>
