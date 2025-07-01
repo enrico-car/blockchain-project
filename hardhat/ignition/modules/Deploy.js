@@ -3,7 +3,10 @@ const { buildModule } = require("@nomicfoundation/hardhat-ignition/modules");
 // Il proprietario del contratto e' il primo wallet della lista
 module.exports = buildModule("DeployModule", (m) => {
 
-  const manufacturer = m.getAccount(0);
+  const deployer = m.getAccount(0);
+  console.log("Deployer address:", deployer);
+
+  const manufacturer = m.getAccount(1);
   console.log("Manufacturer address:", manufacturer);
 
   const pharmacies = [];
@@ -62,7 +65,7 @@ module.exports = buildModule("DeployModule", (m) => {
     });
   }
 
-  m.call(token, "setMinterAuth", [manufacturer, true], { id: "authDeployerAsMinter" });
+  m.call(token, "setMinterAuth", [deployer, true], { id: "authDeployerAsMinter" });
   var amount = 800 * 10 ** 18;
   m.call(token, "mint", [manufacturer, amount.toString()], { id: "mintTokens" });
 

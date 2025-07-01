@@ -114,13 +114,19 @@ function addWalletsToDB() {
     const User = require(userModelPath);
 
     wallets.forEach(async (userWallet, index) => {
-      let role = "retailer"; // Default role
+      let role = "";
       try {
         console.log(index, userWallet.address);
         const existingUser = await User.findOne({ wallet: userWallet.address });
         if (!existingUser) {
           if(index == 0) {
+            role = "deployer";
+          }
+          else if(index == 1) {
             role = "manufacturer";
+          }
+          else if(index >= 2 && index < 15) {
+            role = "retailer";
           }
           else if(index >= 15) {
             role = "pharmacy";
