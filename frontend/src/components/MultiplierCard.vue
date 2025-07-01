@@ -55,6 +55,7 @@ export default {
       if(await setRewardMultiplier(this.multiplierAmount)){
         //cashback request ok
         this.multiplierMessage = 'Multiplier request sent successfully!'
+        this.actualMultiplierAmount = await getRewardMultiplier();
         this.multiplierSuccess = true
       } else {
         //some error
@@ -191,6 +192,7 @@ export default {
   border: 1px solid #e2e8f0;
   background-color: #f9fafb;
   max-width: 100%; /* evita overflow */
+  margin-bottom: 1rem;
 }
 
 .multiplier-info {
