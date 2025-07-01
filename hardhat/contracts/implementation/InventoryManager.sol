@@ -13,15 +13,15 @@ contract InventoryManager is Ownable {
         productManager = ProductManager(productManagerAddress);
     }
 
-    mapping(address => bool) public authorizedUsers;
+    mapping(address => bool) public transactionManager;
 
-    modifier onlyAuthorized() {     // Modifier used as AccessControlList for functions
-        require(authorizedUsers[msg.sender], "Not authorized to use this function");
+    modifier onlyTransactionManager() {     // Modifier used as AccessControlList for functions
+        require(transactionManager[msg.sender], "Not authorized to use this function");
         _;
     }
 
-    function setUserAuth(address wallet, bool authorized) external onlyOwner {
-        authorizedUsers[wallet] = authorized;
+    function setTransactionManager(address wallet, bool authorized) external onlyOwner {
+        transactionManager[wallet] = authorized;
     }
 
     mapping(address => bool) public manufacturerUsers;
@@ -40,7 +40,7 @@ contract InventoryManager is Ownable {
     mapping (address => mapping(uint256 => uint256)) inventory;     // Wallet --> ( lot_id --> qty )
     mapping (address => uint256[]) ownedLots;                       // Wallet --> lista lotti in suo possesso
 
-    function addToInventory(address account, uint256 lotId, uint256 quantity) external onlyAuthorized {
+    function addToInventory(address account, uint256 lotId, uint256 quantity) external onlyTransactionManager {
 
         // Note: quanity >= 0 is checked by default, since we are using uint
         productManager.getLot(lotId);       // Check if lot exists, otherwise getLot will revert
@@ -70,7 +70,7 @@ contract InventoryManager is Ownable {
 
     }
 
-    function removeFromInventory(address account, uint256 lotId, uint256 quantity) external onlyAuthorized {
+    function removeFromInventory(address account, uint256 lotId, uint256 quantity) external onlyTransactionManager {
 
         productManager.getLot(lotId);       // Check if lot exists, otherwise getLot will revert
         require(inventory[account][lotId] >= quantity, string.concat("Quantity (", Strings.toString(quantity) ,
@@ -90,7 +90,7 @@ contract InventoryManager is Ownable {
 
     }
 
-    function getInventory(address account) external view onlyAuthorized returns (uint256[] memory lotIds, uint256[] memory quantities) {
+    function getInventory(address account) external view onlyTransactionManager returns (uint256[] memory lotIds, uint256[] memory quantities) {
 
         uint256[] memory lots = ownedLots[account];
         uint256 length = lots.length;
@@ -144,5 +144,5 @@ contract InventoryManager is Ownable {
         + tecnici/produttore (per eventuali problemi)
 
     ACL per hasSufficientInventory ?? Solo authorized anche qui?? 
-        Potremmo usarla per calcolare l'inventario di un'altro soggetto, rendendo vano l'onlyAuthorized su getInventory
+        Potremmo usarla per calcolare l'inventario di un'altro soggetto, rendendo vano l'onlyTransactionManager su getInventory
 */ 

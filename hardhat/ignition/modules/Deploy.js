@@ -5,12 +5,14 @@ module.exports = buildModule("DeployModule", (m) => {
 
   const manufacturer = m.getAccount(0);
   console.log("Manufacturer address:", manufacturer);
+
   const pharmacies = [];
   for (let i = 15; i < 20; i++) {
     pharmacies.push(m.getAccount(i));
   }
   console.log("Pharmacies addresses:", pharmacies);
 
+  // Cashback token and handler
   const token = m.contract("CashbackToken");
 
   const handler = m.contract("CashbackHandler", [token]);
@@ -21,19 +23,21 @@ module.exports = buildModule("DeployModule", (m) => {
   const productManager = m.contract("ProductManager");
 
   // Authorize the manufactoring house to create products and lots (Creation and removal of lots and products)
-  m.call(productManager, "setUserAuth", [
-    manufacturer, // Change with env
+  m.call(productManager, "setManufacturerAuth", [
+    manufacturer, 
     true,
   ]);
+
   // Inventory manager
   const inventoryManager = m.contract("InventoryManager", [productManager]);
+
+  m.call(productManager, "setInventoryManager", [inventoryManager, true]);
+
   // Give permission to the manufacturer to add lots to its own inventory
   m.call(inventoryManager, "setManufacturerAuth", [
     manufacturer,
     true,
   ]);
-
-  m.call(productManager, "setInventoryManager", [inventoryManager, true]);
 
   // Transaction manager
   const transactionManager = m.contract("TransactionManager", [
@@ -45,14 +49,12 @@ module.exports = buildModule("DeployModule", (m) => {
   // get Mint authorization to Transactin manager
   m.call(token, "setMinterAuth", [transactionManager, true]);
 
-  m.call(transactionManager, "setUserAuth", [
-    manufacturer, // Change with env
+  m.call(inventoryManager, "setTransactionManager", [transactionManager, true]);
+
+  m.call(transactionManager, "setManufacturerAuth", [
+    manufacturer, 
     true,
   ]);
-
-  m.call(token, "setMinterAuth", [manufacturer, true], { id: "authDeployerAsMinter" });
-  var amount = 800 * 10 ** 18;
-  m.call(token, "mint", [manufacturer, amount.toString()], { id: "mintTokens" });
 
   for (let i = 0; i < pharmacies.length; i++) {
     m.call(transactionManager, "setPharmacyAuth", [pharmacies[i], true], {
@@ -60,8 +62,9 @@ module.exports = buildModule("DeployModule", (m) => {
     });
   }
 
-  // Give the transactionManager permission to handle users inventory
-  m.call(inventoryManager, "setUserAuth", [transactionManager, true]);
+  m.call(token, "setMinterAuth", [manufacturer, true], { id: "authDeployerAsMinter" });
+  var amount = 800 * 10 ** 18;
+  m.call(token, "mint", [manufacturer, amount.toString()], { id: "mintTokens" });
 
   return {
     CashbackToken: token,

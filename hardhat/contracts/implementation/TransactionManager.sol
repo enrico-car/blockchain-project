@@ -24,15 +24,15 @@ contract TransactionManager is Ownable {
     event RemovedTransaction(address indexed from, address indexed to, bytes32 indexed detailsHash, Transaction);
     event SaleToCustomer(address indexed pharmacy, uint256[] lotIds, uint256[] quantities, uint256 totalValue);
 
-    mapping(address => bool) public authorizedUsers;
+    mapping(address => bool) public manufacturerUsers;
 
-    modifier onlyAuthorized() {                  // Modifier used as AccessControlList
-        require(authorizedUsers[msg.sender], "Not authorized to use this function");
+    modifier onlyManufactuer() {                  // Modifier used as AccessControlList
+        require(manufacturerUsers[msg.sender], "Not authorized to use this function");
         _;
     }
 
-    function setUserAuth(address wallet, bool authorized) external onlyOwner {
-        authorizedUsers[wallet] = authorized;
+    function setManufacturerAuth(address wallet, bool authorized) external onlyOwner {
+        manufacturerUsers[wallet] = authorized;
     }
 
     mapping(address => bool) public pharmacyUsers;
@@ -64,7 +64,7 @@ contract TransactionManager is Ownable {
     mapping (address => address[]) public sendersToReceivers;           // sender --> [receivers], "wallets in realtion with sender"
     mapping (address => mapping(address => bool)) public hasRelation;   // sender --> (receiver --> bool), "exist relation sender --> receiver?"
 
-    function setRewardMultiplier(uint256 value) external onlyAuthorized {
+    function setRewardMultiplier(uint256 value) external onlyManufactuer {
 
         require(value <= 10000, "Multiplier must be lower than 100% (i.e. value lower than 10000)");
         rewardMultiplier = value;
@@ -322,17 +322,27 @@ contract TransactionManager is Ownable {
     1 - Deploy CashbackToken
     2 - Deploy CashbackHandler, using the CashbackToken address as parameter in the constructor
     3 - Give burn authorization to CashbackHandler in the CashbackToken contract --> Can burn tokens
+        Use setBurnerAuth function in CashbackToken
     4 - Deploy ProductManager
-    5 - Deploy InventoryManager, using the ProductManager address as parameter in the constructor
-    6 - Grant inventoryManagerAuth authorization to the InventoryManager in ProductManager
-    7 - Deploy TransactionManager, using ProductManager, InventoryManager and CashbackToken addresses as parameters in the constructor
-    8 - Give authorization to a Wallet (manufacturing house) in the ProductManager contract --> Can create products and lots
-    9 - Create some products on the ProductManager: 1, ["Prod1", "Material"]
-    10 - Create some lots on the ProductManager: 1, ["01/01/0001", 10000, 1]
-    11 - Grant manufacturerUsers authorization to a user in the InventoryManager 
-    12 - Add to a user's inventory some items using addToManufacturerInventory: 1, 10
-    13 - Give mint authorization to the TransactionManager in the CashbackToken contract --> Can mint tokens
-    14 - Give authorization to the TransactionManager in the InventoryManager contract --> Can operate on users' wallets
+    5 - Grant manufacturer authorization to the manufacturer address in the ProductManager contract --> Can create products and lots
+        Use setManufacturerAuth function in ProductManager
+    6 - Deploy InventoryManager, using the ProductManager address as parameter in the constructor
+    7 - Grant inventoryManager authorization to the InventoryManager in the ProductManager contract --> Can mark lots as produced
+        Use setInventoryManager function in ProductManager
+    8 - Grant manufacturer authorization to the manufacturer address in the InventoryManager contract --> Can produce batches, adding them to its inventory
+        Use setManufacturerAuth function in InventoryManager
+    9 - Deploy TransactionManager, using ProductManager, InventoryManager and CashbackToken addresses as parameters in the constructor    
+    10 - Grant mint authorization to the TransactionManager in the CashbackToken contract --> Can mint tokens
+        Use setMinterAuth function in CashbackToken
+    11 - Grant transactionManager authorization to the TransactionManager in the InventoryManager contract --> Can operate on users' inventory
+        Use setTransactionManager function in InventoryManager
+    12 - Grant manufacturer authorization to the manufacturer address in the TransactionManager contract --> Can modify reward multiplier
+        Use setManufacturerAuth function in TransactionManager
+    13 - Grant pharmacy authorization to a pharmacy address in the TransactionManager contract --> Can sell items to customers
+        Use setPharmacyAuth function in TransactionManager
+    14 - Create some products on the ProductManager: 1, ["Prod1", "Material", ...]
+    15 - Create some lots on the ProductManager: 1, ["01/01/0001", 10000, 1]
+    16 - Add to the manufacturer's inventory some items using addToManufacturerInventory: 1 
     15 - Propose a tranfer between two wallets: walletAddrB, [1], [5]
     16 - Accept proposed transaction (using walletB): walletAddrA
         Note: Use pendingTransaction to retrieve detailsHash

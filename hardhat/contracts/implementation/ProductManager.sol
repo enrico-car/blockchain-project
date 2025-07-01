@@ -5,15 +5,15 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract ProductManager is Ownable {
 
-    mapping(address => bool) public authorizedUsers;
+    mapping(address => bool) public manufacturerUsers;
 
-    modifier onlyAuthorized() {                  // Modifier used as AccessControlList
-        require(authorizedUsers[msg.sender], "Not authorized to use this function");
+    modifier onlyManufacturer() {                  // Modifier used as AccessControlList
+        require(manufacturerUsers[msg.sender], "Not authorized to use this function");
         _;
     }
 
-    function setUserAuth(address wallet, bool authorized) external onlyOwner {
-        authorizedUsers[wallet] = authorized;
+    function setManufacturerAuth(address wallet, bool authorized) external onlyOwner {
+        manufacturerUsers[wallet] = authorized;
     }
 
     mapping(address => bool) public inventoryManager;
@@ -57,7 +57,7 @@ contract ProductManager is Ownable {
     event LotCreated ( uint256 indexed lotId, uint256 indexed productId, LotDetails lotdetails );
     event LotRemoved ( uint256 indexed lotId );
     
-    function createProduct (uint256 productId, DPP calldata dpp) external onlyAuthorized {
+    function createProduct (uint256 productId, DPP calldata dpp) external onlyManufacturer {
 
         require(products[productId].productIdentification == 0, "Product already exists");    // Check if product already exists
         products[productId] = dpp;      // Add the new product
@@ -67,7 +67,7 @@ contract ProductManager is Ownable {
 
     }
 
-    function removeProduct (uint256 productId) external onlyAuthorized {
+    function removeProduct (uint256 productId) external onlyManufacturer {
 
         delete products[productId];     // Remove DPP struct
         for (uint256 i = 0; i < productsIds.length; i++) {     // Remove product id, shrink array
@@ -115,7 +115,7 @@ contract ProductManager is Ownable {
     mapping (uint256 => LotDetails) public lots;
     uint256[] public lotsIds;
 
-    function createLot(uint256 lotId, string calldata timestamp, string calldata expirationDate, uint256 totalQuantity, uint256 unitPrice, uint256 productId) external onlyAuthorized {
+    function createLot(uint256 lotId, string calldata timestamp, string calldata expirationDate, uint256 totalQuantity, uint256 unitPrice, uint256 productId) external onlyManufacturer {
 
         require(bytes(lots[lotId].expirationDate).length == 0, "Lot already exists");   // Check if lot already exists
         require(products[productId].productIdentification != 0, "Product does not exists"); // Check if product exists
@@ -137,7 +137,7 @@ contract ProductManager is Ownable {
 
     }
 
-    function removeLot (uint256 lotId) external onlyAuthorized {
+    function removeLot (uint256 lotId) external onlyManufacturer {
         
         delete lots[lotId];     // Remove LotDetials struct
         for (uint256 i = 0; i < lotsIds.length; i++) {     // Remove lot id, shrink array

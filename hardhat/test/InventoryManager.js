@@ -64,13 +64,13 @@ describe("InventoryManager", function () {
     const ProductManager = await ethers.getContractFactory("ProductManager");
     const productManager = await ProductManager.deploy();
     await productManager.waitForDeployment();
-    await productManager.setUserAuth(owner.address, true);
+    await productManager.setManufacturerAuth(owner.address, true);
 
     const InventoryManager = await ethers.getContractFactory("InventoryManager");
     const inventoryManager = await InventoryManager.deploy(productManager.target);
     await inventoryManager.waitForDeployment();
 
-    await inventoryManager.setUserAuth(owner.address, true);
+    await inventoryManager.setTransactionManager(owner.address, true);
     await inventoryManager.setManufacturerAuth(owner.address, true);
     await productManager.setInventoryManager(inventoryManager.target, true);
 
@@ -113,20 +113,20 @@ describe("InventoryManager", function () {
       it("Should prevent unauthorized changes to the ACLs", async function () {
         const { inventoryManager, owner, otherAccount } = await loadFixture(deployInventoryManager);
   
-        await expect(inventoryManager.connect(otherAccount).setUserAuth(owner.address, true)).to.be.reverted;
+        await expect(inventoryManager.connect(otherAccount).setTransactionManager(owner.address, true)).to.be.reverted;
         await expect(inventoryManager.connect(otherAccount).setManufacturerAuth(owner.address, true)).to.be.reverted;
       });
   
       it("Should allow the owner to modify the ACLs", async function () {
         const { inventoryManager, owner, otherAccount } = await loadFixture(deployInventoryManager);
   
-        expect(await inventoryManager.authorizedUsers(otherAccount.address)).to.equal(false);
+        expect(await inventoryManager.transactionManager(otherAccount.address)).to.equal(false);
         expect(await inventoryManager.manufacturerUsers(otherAccount.address)).to.equal(false);
   
-        await inventoryManager.setUserAuth(otherAccount.address, true);
+        await inventoryManager.setTransactionManager(otherAccount.address, true);
         await inventoryManager.setManufacturerAuth(otherAccount.address, true);
   
-        expect(await inventoryManager.authorizedUsers(otherAccount.address)).to.equal(true);
+        expect(await inventoryManager.transactionManager(otherAccount.address)).to.equal(true);
         expect(await inventoryManager.manufacturerUsers(otherAccount.address)).to.equal(true);
       });
   

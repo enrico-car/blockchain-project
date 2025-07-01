@@ -77,9 +77,9 @@ describe("TransactionManager", function () {
     const TransactionManager = await ethers.getContractFactory("TransactionManager");
     const transactionManager = await TransactionManager.deploy(productManager.target, inventoryManager.target, cashbackToken.target);
     await transactionManager.waitForDeployment();
-    await transactionManager.setUserAuth(manufacturer.address, true);
+    await transactionManager.setManufacturerAuth(manufacturer.address, true);
 
-    await productManager.setUserAuth(manufacturer.address, true);
+    await productManager.setManufacturerAuth(manufacturer.address, true);
 
     await productManager.connect(manufacturer).createProduct(sampleProduct.productId, sampleProduct.DPP);
 
@@ -102,7 +102,7 @@ describe("TransactionManager", function () {
 
     await cashbackToken.setMinterAuth(transactionManager.target, true);
 
-    await inventoryManager.setUserAuth(transactionManager.target, true);
+    await inventoryManager.setTransactionManager(transactionManager.target, true);
 
     return { transactionManager, owner, manufacturer, wholesaler, pharmacy, productManager, inventoryManager, cashbackToken };
   }
@@ -151,17 +151,17 @@ describe("TransactionManager", function () {
     it("Should prevent unauthorized changes to the ACLs", async function () {
       const { transactionManager, manufacturer } = await loadFixture(deployTransactionManager);
 
-      await expect(transactionManager.connect(manufacturer).setUserAuth(manufacturer.address, true)).to.be.reverted;
+      await expect(transactionManager.connect(manufacturer).setManufacturerAuth(manufacturer.address, true)).to.be.reverted;
     });
 
     it("Should allow the owner to modify the ACLs", async function () {
       const { transactionManager, owner } = await loadFixture(deployTransactionManager);
 
-      expect(await transactionManager.authorizedUsers(owner.address)).to.equal(false);
+      expect(await transactionManager.manufacturerUsers(owner.address)).to.equal(false);
 
-      await transactionManager.setUserAuth(owner.address, true);
+      await transactionManager.setManufacturerAuth(owner.address, true);
 
-      expect(await transactionManager.authorizedUsers(owner.address)).to.equal(true);
+      expect(await transactionManager.manufacturerUsers(owner.address)).to.equal(true);
     });
 
     it("Should correctly prevent unauthorized access through ACLs", async function () {

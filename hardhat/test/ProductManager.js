@@ -45,7 +45,7 @@ describe("ProductManager", function () {
     const productManager = await ProductManager.deploy();
     await productManager.waitForDeployment();
 
-    await productManager.setUserAuth(owner.address, true);
+    await productManager.setManufacturerAuth(owner.address, true);
     await productManager.setInventoryManager(owner.address, true);
 
     return { productManager, owner, otherAccount };
@@ -71,17 +71,17 @@ describe("ProductManager", function () {
     it("Should prevent unauthorized changes to the ACLs", async function () {
       const { productManager, owner, otherAccount } = await loadFixture(deployProductManager);
 
-      await expect(productManager.connect(otherAccount).setUserAuth(owner.address, true)).to.be.reverted;
+      await expect(productManager.connect(otherAccount).setManufacturerAuth(owner.address, true)).to.be.reverted;
     });
 
     it("Should allow the owner to modify the ACLs", async function () {
       const { productManager, owner, otherAccount } = await loadFixture(deployProductManager);
 
-      expect(await productManager.authorizedUsers(otherAccount.address)).to.equal(false);
+      expect(await productManager.manufacturerUsers(otherAccount.address)).to.equal(false);
 
-      await productManager.setUserAuth(otherAccount.address, true);
+      await productManager.setManufacturerAuth(otherAccount.address, true);
 
-      expect(await productManager.authorizedUsers(otherAccount.address)).to.equal(true);
+      expect(await productManager.manufacturerUsers(otherAccount.address)).to.equal(true);
     });
 
     it("Should correctly prevent unauthorized access through ACLs", async function () {
