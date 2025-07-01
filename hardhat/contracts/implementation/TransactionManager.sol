@@ -2,7 +2,7 @@
 pragma solidity 0.8.30;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {CashbackToken} from "contracts/tokens/CashbackToken.sol";
+import {CashbackToken} from "../tokens/CashbackToken.sol";
 import {ProductManager} from "./ProductManager.sol";
 import {InventoryManager} from "./InventoryManager.sol";
 
@@ -33,6 +33,17 @@ contract TransactionManager is Ownable {
 
     function setUserAuth(address wallet, bool authorized) external onlyOwner {
         authorizedUsers[wallet] = authorized;
+    }
+
+    mapping(address => bool) public pharmacyUsers;
+
+    modifier onlyPharmacy() {     // Modifier used as AccessControlList for functions
+        require(pharmacyUsers[msg.sender], "Only a pharmacy is allowed to use this function");
+        _;
+    }
+
+    function setPharmacyAuth(address wallet, bool authorized) external onlyOwner {
+        pharmacyUsers[wallet] = authorized;
     }
 
     struct Transaction {
@@ -273,7 +284,9 @@ contract TransactionManager is Ownable {
         }
     }
 
-    function registerSaleToCustomer(uint256[] calldata lotIds, uint256[] calldata quantities) external {
+    function registerSaleToCustomer(uint256[] calldata lotIds, uint256[] calldata quantities) external onlyPharmacy {
+
+        require(lotIds.length > 0, "Cannot register a sale with empty lot list");
 
         require(lotIds.length == quantities.length, "Arrays size must match");  // Check if arrays' size match
 

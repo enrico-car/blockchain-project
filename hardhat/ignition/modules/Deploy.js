@@ -2,6 +2,15 @@ const { buildModule } = require("@nomicfoundation/hardhat-ignition/modules");
 
 // Il proprietario del contratto e' il primo wallet della lista
 module.exports = buildModule("DeployModule", (m) => {
+
+  const manufacturer = m.getAccount(0);
+  console.log("Manufacturer address:", manufacturer);
+  const pharmacies = [];
+  for (let i = 15; i < 20; i++) {
+    pharmacies.push(m.getAccount(i));
+  }
+  console.log("Pharmacies addresses:", pharmacies);
+
   const token = m.contract("CashbackToken");
 
   const handler = m.contract("CashbackHandler", [token]);
@@ -13,14 +22,14 @@ module.exports = buildModule("DeployModule", (m) => {
 
   // Authorize the manufactoring house to create products and lots (Creation and removal of lots and products)
   m.call(productManager, "setUserAuth", [
-    "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", // Change with env
+    manufacturer, // Change with env
     true,
   ]);
   // Inventory manager
   const inventoryManager = m.contract("InventoryManager", [productManager]);
   // Give permission to the manufacturer to add lots to its own inventory
   m.call(inventoryManager, "setManufacturerAuth", [
-    "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    manufacturer,
     true,
   ]);
 
@@ -37,13 +46,19 @@ module.exports = buildModule("DeployModule", (m) => {
   m.call(token, "setMinterAuth", [transactionManager, true]);
 
   m.call(transactionManager, "setUserAuth", [
-    "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", // Change with env
+    manufacturer, // Change with env
     true,
   ]);
 
-  m.call(token, "setMinterAuth", ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", true], { id: "authDeployerAsMinter" });
+  m.call(token, "setMinterAuth", [manufacturer, true], { id: "authDeployerAsMinter" });
   var amount = 800 * 10 ** 18;
-  m.call(token, "mint", ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", amount.toString()], { id: "mintTokens" });
+  m.call(token, "mint", [manufacturer, amount.toString()], { id: "mintTokens" });
+
+  for (let i = 0; i < pharmacies.length; i++) {
+    m.call(transactionManager, "setPharmacyAuth", [pharmacies[i], true], {
+      id: `setPharmacyAuth_${i}`,
+    });
+  }
 
   // Give the transactionManager permission to handle users inventory
   m.call(inventoryManager, "setUserAuth", [transactionManager, true]);

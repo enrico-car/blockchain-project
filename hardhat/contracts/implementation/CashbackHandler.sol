@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.30;
 
-import {CashbackToken} from "contracts/tokens/CashbackToken.sol";
+import {CashbackToken} from "../tokens/CashbackToken.sol";
 
 contract CashbackHandler {
     

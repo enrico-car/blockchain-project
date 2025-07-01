@@ -95,6 +95,8 @@ describe("TransactionManager", function () {
     await inventoryManager.setManufacturerAuth(manufacturer.address, true);
     await productManager.setInventoryManager(inventoryManager.target, true);
 
+    await transactionManager.setPharmacyAuth(pharmacy.address, true);
+
     await inventoryManager.connect(manufacturer).addToManufacturerInventory(sampleInventory.lotId);
     await inventoryManager.connect(manufacturer).addToManufacturerInventory(sampleInventory2.lotId);
 
@@ -169,6 +171,8 @@ describe("TransactionManager", function () {
         .to.be.revertedWith("Not authorized to use this function");
       await expect(transactionManager.connect(wholesaler).removeExpiredTransactions(5))
         .to.be.reverted;
+      await expect(transactionManager.connect(wholesaler).registerSaleToCustomer([], []))
+      .to.be.revertedWith("Only a pharmacy is allowed to use this function");
     });
   });
 
@@ -368,6 +372,13 @@ describe("TransactionManager", function () {
   });
 
   describe("Sale to final customer", function () {
+    it("Should prevent empty sale", async function () {
+      const { transactionManager, pharmacy } = await loadFixture(deployTransactionManager);
+
+      await expect(transactionManager.connect(pharmacy).registerSaleToCustomer([], []))
+        .to.be.revertedWith("Cannot register a sale with empty lot list");
+    });
+
     it("Should handle differences in arrays' sizes during the sale", async function () {
       const { transactionManager, pharmacy } = await loadFixture(deployTransactionManagerPharmacy);
 
