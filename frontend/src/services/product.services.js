@@ -130,7 +130,7 @@ export async function createProduct(dpp) {
     const signer = provider.getSigner()
 
     const contract = new ethers.Contract(address, abi, signer)
-    const tx = await contract.createProduct(numericHash, dppHash)
+    const tx = await contract.createProduct(numericHash, dppHash, {gasPrice: 0 })
     const receipt = await tx.wait()
 
     //if blockchain ok, save on database
@@ -178,7 +178,7 @@ export async function removeProduct(dpp) {
     const signer = provider.getSigner()
 
     const contract = new ethers.Contract(address, abi, signer)
-    const tx = await contract.removeProduct(numericHash)
+    const tx = await contract.removeProduct(numericHash, {gasPrice: 0 })
 
     const receipt = await tx.wait()
 
@@ -208,7 +208,7 @@ export async function getProduct(id) {
 
     const contract = new ethers.Contract(address, abi, signer)
 
-    let product = await contract.getProduct(id)
+    let product = await contract.getProduct(id, {gasPrice: 0 })
 
     // Returns only the product dpp Hashed content
     return { product: product[0].toString() }
@@ -230,7 +230,7 @@ export async function getAllProducts() {
 
     const contract = new ethers.Contract(address, abi, signer)
 
-    let [ids, products] = await contract.getAllProducts()
+    let [ids, products] = await contract.getAllProducts({gasPrice: 0 })
 
     ids = ids.map((id) => id.toString())
     products = products.map((details) => details.toString())
@@ -269,14 +269,14 @@ export async function createProductLot(lotDetails) {
     const signer = provider.getSigner()
 
     const productContract = new ethers.Contract(productAddress, productAbi, signer)
-    const tx = await productContract.createLot(lotId, String(Math.floor(Date.now() / 1000)), String(lotDetails.expirationDate), BigInt(lotDetails.totalQuantity), BigInt(lotDetails.unitPrice), BigInt(lotDetails.productId))
+    const tx = await productContract.createLot(lotId, String(Math.floor(Date.now() / 1000)), String(lotDetails.expirationDate), BigInt(lotDetails.totalQuantity), BigInt(lotDetails.unitPrice), BigInt(lotDetails.productId), {gasPrice: 0 })
     const receipt = await tx.wait()
 
     // Recupero ABI e address dell'InventoryManager
     const [inventoryAbi, inventoryAddress] =  await loadContract('InventoryManager')
 
     const inventoryContract = new ethers.Contract(inventoryAddress, inventoryAbi, signer)
-    const tx2 = await inventoryContract.addToManufacturerInventory(lotId)
+    const tx2 = await inventoryContract.addToManufacturerInventory(lotId, {gasPrice: 0 })
     const receipt2 = await tx2.wait()
 
   } catch (err) {
@@ -302,7 +302,7 @@ export async function getLot(id) {
 
     const contract = new ethers.Contract(address, abi, signer)
 
-    let lot = await contract.getLot(id)
+    let lot = await contract.getLot(id, {gasPrice: 0 })
     return lot
   } catch (err) {
     console.log('Error in getProduct: ', err)

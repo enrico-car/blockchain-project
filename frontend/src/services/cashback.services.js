@@ -20,13 +20,13 @@ export async function redeemCashback() {
 
     //approve CashbackHandler contract to spend MIN_CASHBACK_AMOUNT tokens on behalf of user
     const tokenContract = new ethers.Contract(tokenAddress, tokenAbi, signer);
-    const approveTx = await tokenContract.approve(handlerAddress, MIN_CASHBACK_AMOUNT);
+    const approveTx = await tokenContract.approve(handlerAddress, MIN_CASHBACK_AMOUNT,{gasPrice: 0 });
     await approveTx.wait();
     console.log('Approval completed');
 
     //now call redeemCashback
     const handlerContract = new ethers.Contract(handlerAddress, handlerAbi, signer);
-    const redeemTx = await handlerContract.redeemCashback();
+    const redeemTx = await handlerContract.redeemCashback({gasPrice: 0 });
     await redeemTx.wait();
     console.log('Redeemed cashback successfully');
     return true;
@@ -49,7 +49,7 @@ export async function getTokenBalance(){
 
         const contract = new ethers.Contract(address, abi, signer);
 
-        const rawBalance = await contract.balanceOf(signer);
+        const rawBalance = await contract.balanceOf(signer, {gasPrice: 0 });
         const balance = ethers.formatUnits(rawBalance, 18);
         
         return balance;
@@ -80,7 +80,7 @@ export async function setRewardMultiplier(value){
         //round value as smart contract allows only for int values
         //this is useful when the user insert more than 2 decimal digits
         //and we need to pass an unsigned value
-        const tx = await contract.setRewardMultiplier(Math.round(value));
+        const tx = await contract.setRewardMultiplier(Math.round(value), {gasPrice: 0 });
         await tx.wait();
 
         console.log("New reward multiplier set!");
@@ -105,7 +105,7 @@ export async function getRewardMultiplier(){
 
         const contract = new ethers.Contract(address, abi, signer);
 
-        const rawReward = await contract.rewardMultiplier();
+        const rawReward = await contract.rewardMultiplier({gasPrice: 0 });
         const reward = ethers.formatUnits(rawReward, 2);
 
         console.log("Reward multiplier retrieved!");

@@ -21,7 +21,7 @@ export async function getInventory() {
 
   const contract = new ethers.Contract(address, abi, signer)
 
-  let [lots, quantities] = await contract.getMyInventory()
+  let [lots, quantities] = await contract.getMyInventory({gasPrice: 0 })
 
   lots = lots.map((id) => id.toString())
   quantities = quantities.map((qt) => qt.toString())

@@ -31,7 +31,7 @@ export async function proposeTransaction(walletAddress, entries) {
     const signer = provider.getSigner()
 
     const contract = new ethers.Contract(address, abi, signer)
-    const tx = await contract.proposeTransaction(walletAddress, lotIds, quantities)
+    const tx = await contract.proposeTransaction(walletAddress, lotIds, quantities, {gasPrice: 0 })
 
     const receipt = await tx.wait()
     return receipt
@@ -61,7 +61,7 @@ export async function getIncomingTransactions() {
     const signer = provider.getSigner()
     const contract = new ethers.Contract(address, abi, signer)
 
-    const receipt = await contract.getIncomingTransactions()
+    const receipt = await contract.getIncomingTransactions({gasPrice: 0 })
 
     const formatted = receipt.map(transaction => {
       return {
@@ -102,7 +102,7 @@ export async function getOutgoingTransactions() {
     const signer = provider.getSigner()
     const contract = new ethers.Contract(address, abi, signer)
 
-    const receipt = await contract.getOutgoingTransactions()
+    const receipt = await contract.getOutgoingTransactions({gasPrice: 0 })
 
     const formatted = receipt.map(transaction => {
       return {
@@ -142,7 +142,7 @@ export async function respondToTransactionRequest(from, detailsHash, response) {
     const signer = provider.getSigner()
     const contract = new ethers.Contract(address, abi, signer)
 
-    const receipt = await contract.reviewTransaction(from, detailsHash, response)
+    const receipt = await contract.reviewTransaction(from, detailsHash, response,{gasPrice: 0 })
 
     return receipt
   } catch (err) {
@@ -169,7 +169,7 @@ export async function registerSaleToCustomer(lotIds, quantities) {
     const signer = provider.getSigner()
     const contract = new ethers.Contract(address, abi, signer)
 
-    const receipt = await contract.registerSaleToCustomer(lotIds, quantities)
+    const receipt = await contract.registerSaleToCustomer(lotIds, quantities,{gasPrice: 0 })
 
     return receipt
   } catch (err) {
