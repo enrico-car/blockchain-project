@@ -38,6 +38,8 @@ contract CashbackHandler {
 
     }
 
+    fallback() external {}
+
 }
 
 /*

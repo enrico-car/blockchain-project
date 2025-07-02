@@ -77,6 +77,10 @@
     "type": "event"
   },
   {
+    "stateMutability": "nonpayable",
+    "type": "fallback"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",

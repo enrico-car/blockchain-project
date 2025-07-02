@@ -309,6 +309,8 @@ contract TransactionManager is Ownable {
 
     }
 
+    fallback() external {}
+
 }
 
 /* TODO: 

@@ -345,6 +345,10 @@
     "type": "event"
   },
   {
+    "stateMutability": "nonpayable",
+    "type": "fallback"
+  },
+  {
     "inputs": [],
     "name": "cashbackToken",
     "outputs": [

@@ -171,7 +171,6 @@ contract ProductManager is Ownable {
 
     }
 
-    //TODO: 
     function markLotAsProduced (uint256 lotId) external onlyInventoryManager {
 
         require(bytes(lots[lotId].expirationDate).length != 0, "Lot does not exist");
@@ -180,6 +179,8 @@ contract ProductManager is Ownable {
         lots[lotId].hasBeenProduced = true;
 
     }
+
+    fallback() external {}
 
 }
 

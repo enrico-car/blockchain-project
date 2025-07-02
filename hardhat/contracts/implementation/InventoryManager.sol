@@ -136,6 +136,7 @@ contract InventoryManager is Ownable {
 
     }
 
+    fallback() external {}
 
 }
 

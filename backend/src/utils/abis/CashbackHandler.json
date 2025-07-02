@@ -30,6 +30,10 @@
     "type": "event"
   },
   {
+    "stateMutability": "nonpayable",
+    "type": "fallback"
+  },
+  {
     "inputs": [],
     "name": "MIN_CASHBACK_AMOUNT",
     "outputs": [
