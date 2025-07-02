@@ -341,9 +341,14 @@ export default {
           if (index !== -1) {
             final.push(sametransaction[index])
           } else {
-            index = sametransaction.findIndex(item => item.type === 'AddedTransaction'); // The transaction is still in pending
+            index = sametransaction.findIndex(item => item.type === 'RemovedTransaction'); // The transaction expired
             if (index !== -1 && sametransaction[index].isFrom) {
               final.push(sametransaction[index])
+            } else {
+              index = sametransaction.findIndex(item => item.type === 'AddedTransaction'); // The transaction is still in pending
+              if (index !== -1 && sametransaction[index].isFrom) {
+                final.push(sametransaction[index])
+              }
             }
           }
         }

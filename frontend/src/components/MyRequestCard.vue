@@ -75,6 +75,10 @@ export default {
           label: 'Declined',
           class: 'status-rejected',
         },
+        RemovedTransaction: {
+          label: 'Expired',
+          class: 'status-expired',
+        }
       }
       return configs[this.request.type] || configs.AddedTransaction
     },
@@ -206,6 +210,12 @@ export default {
   background: #fee2e2;
   color: #991b1b;
   border: 1px solid #ef4444;
+}
+
+.status-expired {
+  background: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #9ca3af;
 }
 
 .status-icon {
