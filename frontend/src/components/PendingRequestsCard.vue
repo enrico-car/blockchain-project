@@ -13,7 +13,7 @@
         <div class="card-body">
           <div class="requester-info">
             <span class="requester-label">From:</span>
-            <span class="requester-name">{{ request.from }}</span>
+            <span class="requester-name">{{ resolveName(request.from) }}</span>
           </div>
           <div class="requester-info">
             <span class="requester-label">Content:</span>
@@ -55,6 +55,7 @@ export default {
       type: Object,
       required: true,
     },
+    users: Array,
   },
   emits: ['approve', 'reject'],
   data() {
@@ -110,6 +111,16 @@ export default {
     handleReject() {
       // Emit reject event that will be catched by the parent component (RequestManager)
       this.$emit('reject', this.request.from, this.request.detailsHash)
+    },
+    resolveName(wallet) {
+      const match = this.users.find(u => u.wallet.toLowerCase() === wallet.toLowerCase());
+      if (match) {
+        return `${match.realName} (${this.truncateWallet(match.wallet)})`;
+      }
+      return this.truncateWallet(wallet); // fallback
+    },
+    truncateWallet(wallet) {
+      return `${wallet.slice(0, 6)}...${wallet.slice(-4)}`;
     },
   },
 }

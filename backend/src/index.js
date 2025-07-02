@@ -85,7 +85,7 @@ function addWalletsToDB() {
       `${userModelFile}.js`
     );
     const User = require(userModelPath);
-
+    i = 0
     wallets.forEach(async (userWallet, index) => {
       let role = "";
       try {
@@ -104,7 +104,7 @@ function addWalletsToDB() {
           else if(index >= 15) {
             role = "pharmacy";
           }
-          const newWallet = new User({wallet: userWallet.address, realName: `Name ${index}`, location: `Location ${index}`, type: role});
+          const newWallet = new User({wallet: userWallet.address, realName: `${role} ${i++}`, location: `Location ${index}`, type: role});
           await newWallet.save();
           //console.log(`Added wallet: ${userWallet.address}`);
         }

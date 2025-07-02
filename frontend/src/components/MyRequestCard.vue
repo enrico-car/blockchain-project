@@ -5,16 +5,16 @@
     <div class="card-body">
       <div v-if="request.isFrom" class="requester-info">
         <span class="requester-label">To:</span>
-        <span class="requester-name">{{ request.to }}</span>
+        <span class="requester-name">{{ resolveName(request.to) }}</span>
         <div class="transaction-type">
-          <span class="icon"> ⬆ Out </span>
+          <span class="icon">⬆ Out</span>
         </div>
       </div>
       <div v-else class="requester-info">
         <span class="requester-label">From:</span>
-        <span class="requester-name">{{ request.from }}</span>
+        <span class="requester-name">{{ resolveName(request.from) }}</span>
         <div class="transaction-type">
-          <span class="icon"> ⬇ In </span>
+          <span class="icon">⬇ In</span>
         </div>
       </div>
       <div class="requester-info">
@@ -52,6 +52,7 @@ export default {
       type: Object,
       required: true,
     },
+    users: Array,
   },
   data() {
     return {
@@ -118,6 +119,16 @@ export default {
       return names
         .map((name, i) => `${name}: ${qt[i]}`)
         .join(', ');
+    },
+    resolveName(wallet) {
+      const match = this.users.find(u => u.wallet.toLowerCase() === wallet.toLowerCase());
+      if (match) {
+        return `${match.realName} (${this.truncateWallet(match.wallet)})`;
+      }
+      return this.truncateWallet(wallet); // fallback
+    },
+    truncateWallet(wallet) {
+      return `${wallet.slice(0, 6)}...${wallet.slice(-4)}`;
     },
   },
 }

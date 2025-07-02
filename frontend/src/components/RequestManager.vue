@@ -33,6 +33,7 @@
             v-for="request in pendingRequests"
             :key="request.id"
             :request="request"
+            :users="users"
             @approve="handleApprove"
             @reject="handleReject"
           />
@@ -45,7 +46,12 @@
       <!-- My transaction status -->
       <section v-if="activeTab === 'my'" class="requests-section">
         <div class="requests-list">
-          <MyRequestCard v-for="request in myRequests" :key="request.id" :request="request" />
+          <MyRequestCard
+            v-for="request in myRequests"
+            :key="request.id"
+            :request="request"
+            :users="users"
+          />
           <div v-if="myRequests.length === 0" class="empty-state">
             <p>There are no transactions from/to me yet</p>
           </div>
@@ -63,13 +69,20 @@
         <form @submit.prevent="submitRequest" class="modal-form">
           <div class="form-group">
             <label for="destination">Destination</label>
-            <input
+            <select
               id="destination"
               v-model="newTransaction.to"
-              type="text"
-              placeholder="Enter destination address"
               required
-            />
+            >
+              <option disabled value="">Select a destination</option>
+              <option
+                v-for="user in users"
+                :key="user.wallet"
+                :value="user.wallet"
+              >
+                {{ user.realName }} - {{ formatWallet(user.wallet) }}
+              </option>
+            </select>
           </div>
           <div v-for="(entry, index) in newTransaction.entries" :key="index" class="form-row">
             <div class="form-group half">
@@ -161,6 +174,7 @@ export default {
         entries: [{ lotId: '', quantities: '' }],
       },
       products: [],
+      users: [],
     }
   },
   async mounted() {
@@ -168,6 +182,7 @@ export default {
       this.getIncomingTransactions()
       this.getMyTransactionStatus()
       this.getProducts();
+      this.getUsers();
     } catch (e) {
       console.log(e)
     }
@@ -256,6 +271,23 @@ export default {
 
       return uniqueSet;
     },
+    formatWallet(wallet) {
+      if (!wallet) return "";
+      return `${wallet.slice(0, 6)}...${wallet.slice(-4)}`;
+    },
+    async getUsers() {
+      try {
+        const response = await fetch("http://localhost:3000/api/user/all");
+        const data = await response.json();
+
+        // Ordina per realName (case-insensitive)
+        this.users = data.users.sort((a, b) =>
+          a.realName.localeCompare(b.realName, undefined, { sensitivity: 'base' })
+        );
+      } catch (e) {
+        this.showError("Error while fetching users");
+      }
+    },
     formatLotId(lotId) {
       if (!lotId) return '';
       return `${lotId.slice(0, 4)}...${lotId.slice(-4)}`;
@@ -286,7 +318,6 @@ export default {
         
         // Merge on-chain details with server infos
         this.products = await processLots(results)
-        console.log("Products obtained: ", this.products);
       }catch(e){
         this.showError("Erorr while obtaining the inventory");
       }
