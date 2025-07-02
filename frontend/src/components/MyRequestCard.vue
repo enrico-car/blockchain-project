@@ -1,6 +1,7 @@
 <template>
   <div class="my-request-card">
 
+    <!-- Transaction info -->
     <div class="card-body">
       <div v-if="request.isFrom" class="requester-info">
         <span class="requester-label">To:</span>
@@ -26,6 +27,7 @@
       </div>
     </div>
 
+    <!-- Transaction status -->
     <div class="card-header">
       <div class="product-info">
         <h4 class="product-name">{{ request.productName }}</h4>
@@ -77,24 +79,24 @@ export default {
     },
   },
   async mounted (){
-
-    // console.log(this.request)
     
+    // Having the lotIds of the my transaction events fetch all the relevant data
     const results = await Promise.all(
       this.request.lotIds.map(async (element, index) => {
+        // Fetch lot property
         const lot = await getLot(element);
         return {
-          ...lot,           // proprietà originali del lot
-          6: element,   // aggiungi l'id
-          7: this.request.quantities[index], // aggiungi la quantità corrispondente
+          ...lot,       // Original lot property
+          6: element,   // Adding lot id (not present in the fetched lot property)
+          7: this.request.quantities[index], // Add the corresponding quantities
         };
       })
     );
 
-    console.log(results)
+    // Merge the lot data with the item details in the database
     let complete = await processLots(results)
-    console.log("Info: ", complete)
 
+    // Update local variables for info visualization
     let names = complete.map((item) => { return item.productIdentification })
     let qt = complete.map((item) => { return item.quantity })
     this.names = names

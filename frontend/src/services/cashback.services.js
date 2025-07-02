@@ -51,8 +51,7 @@ export async function getTokenBalance(){
 
         const rawBalance = await contract.balanceOf(signer);
         const balance = ethers.formatUnits(rawBalance, 18);
-
-        console.log(balance);
+        
         return balance;
     } catch (error) {
         console.log("Not possible to obtain cashback balance", error);

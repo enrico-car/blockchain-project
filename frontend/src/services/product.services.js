@@ -25,59 +25,31 @@ function generateIdFromObject(dpp) {
   }
 
   const serialized = serialize(dpp)
-  console.log(serialized)
-  
   const hashHex = keccak256(toUtf8Bytes(serialized))
   const numericHash = BigInt(hashHex)
   return numericHash
 }
 
-export function hashObjectDetails(obj) {
-  const serialize = v =>
-    v === null || v === undefined
-      ? ''
-      : Array.isArray(v)
-        ? `[${v.map(serialize).join(',')}]`
-        : typeof v === 'object'
-          ? `{${Object.keys(v).sort().map(k => `"${k}":${serialize(v[k])}`).join(',')}}`
-          : String(v)
+// Return the input object with all the values Hashed
+// export function hashObjectDetails(obj) {
+//   const serialize = v =>
+//     v === null || v === undefined
+//       ? ''
+//       : Array.isArray(v)
+//         ? `[${v.map(serialize).join(',')}]`
+//         : typeof v === 'object'
+//           ? `{${Object.keys(v).sort().map(k => `"${k}":${serialize(v[k])}`).join(',')}}`
+//           : String(v)
 
-  const hashField = v => {
-    if (typeof v === 'object') {
-      return Object.fromEntries(Object.entries(v).map(([k, val]) => [k, hashField(val)]))
-    }
-    return BigInt(keccak256(toUtf8Bytes(serialize(v))))
-  }
+//   const hashField = v => {
+//     if (typeof v === 'object') {
+//       return Object.fromEntries(Object.entries(v).map(([k, val]) => [k, hashField(val)]))
+//     }
+//     return BigInt(keccak256(toUtf8Bytes(serialize(v))))
+//   }
 
-  return hashField(obj)
-}
-
-async function hashString(str) {
-  const encoder = new TextEncoder()
-  const data = encoder.encode(str)
-  const hashBuffer = await window.crypto.subtle.digest('SHA-256', data)
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
-}
-
-async function hashDppFields(dpp) {
-  const hashedDpp = {}
-
-  for (const [key, value] of Object.entries(dpp)) {
-    if (typeof value === 'string') {
-      hashedDpp[key] = await hashString(value)
-    } else if (Array.isArray(value)) {
-      const joined = value.join('') // flatten to one string
-      hashedDpp[key] = await hashString(joined)
-    } else if (value != null) {
-      // fallback: hash string representation of other values
-      hashedDpp[key] = await hashString(String(value))
-    }
-    // skip undefined/null
-  }
-
-  return hashedDpp
-}
+//   return hashField(obj)
+// }
 
 export function base64DataUrlToFile(dataUrl, filename) {
   const [header, base64] = dataUrl.split(',')
@@ -93,7 +65,8 @@ export function base64DataUrlToFile(dataUrl, filename) {
 }
 
 
-async function hashDppFields2(dpp) {
+// Return the input dpp object but with all the values hashed
+async function hashDppFields(dpp) {
   const fields = [
     'productIdentification',
     'materials',
@@ -136,35 +109,29 @@ async function hashDppFields2(dpp) {
   return hashedDpp;
 }
 
+
+/**
+ * Creates a new product on blockchain.
+ * 
+ * @param {Object} dpp - The product Dpp data.
+ */
 export async function createProduct(dpp) {
   try {
-    console.log(dpp)
     //generate numerical hash based on dpp fields
     const numericHash = generateIdFromObject(dpp)
-    console.log('Product numeric hash:', numericHash.toString())
 
     //hash every single field of the dpp before storing it into the blockchain
-    console.log("PIP:", dpp)
-    var dppHash = await hashDppFields2(dpp)
-
-    console.log("SCHIFO")
-    console.log(dppHash)
+    var dppHash = await hashDppFields(dpp)
 
     //blockchain
     const [abi, address] = await loadContract('ProductManager')
 
     const provider = new Web3Provider(window.ethereum)
     const signer = provider.getSigner()
-    console.log(`signer: ${await signer.getAddress()}`)
 
     const contract = new ethers.Contract(address, abi, signer)
-    console.log(dppHash)
     const tx = await contract.createProduct(numericHash, dppHash)
-    console.log(tx)
-    console.log(`Transaction submitted: ${tx.hash}`)
-
     const receipt = await tx.wait()
-    console.log(receipt)
 
     //if blockchain ok, save on database
     dpp.id = numericHash.toString()
@@ -182,8 +149,6 @@ export async function createProduct(dpp) {
       }
     }
 
-    console.log(formData)
-
     // Post formData with image to backend
     let response = await axios.post(`${ENDPOINT_URL}/product/create`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
@@ -196,26 +161,26 @@ export async function createProduct(dpp) {
   }
 }
 
+/**
+ * Remove a product from blockchain.
+ * 
+ * @param {Object} dpp - The product Dpp data.
+ */
 export async function removeProduct(dpp) {
   try {
-    console.log(dpp)
     //generate numerical hash based on dpp fields
     const numericHash = generateIdFromObject(dpp)
-    console.log('Product numeric hash:', numericHash.toString())
 
     //blockchain
     const [abi, address] = await loadContract('ProductManager')
 
     const provider = new Web3Provider(window.ethereum)
     const signer = provider.getSigner()
-    console.log(`signer: ${await signer.getAddress()}`)
 
     const contract = new ethers.Contract(address, abi, signer)
     const tx = await contract.removeProduct(numericHash)
-    console.log(`Transaction submitted: ${tx.hash}`)
 
     const receipt = await tx.wait()
-    console.log(receipt)
 
     //if blockchain ok, delete also from database
     let response = await axios.delete(`${ENDPOINT_URL}/product/delete/${numericHash}`)
@@ -226,14 +191,20 @@ export async function removeProduct(dpp) {
   }
 }
 
+
+/**
+ * Fetches a product's hashed dpp content from the blockchain by its ID.
+ * 
+ * @param {number|string} id - The ID of the product to fetch.
+ * 
+ * @returns {Promise<{ product: string }>} A promise that resolves to an object containing the hashed product content.
+ */
 export async function getProduct(id) {
   try {
-    //blockchain
     const [abi, address] = await loadContract('ProductManager')
 
     const provider = new Web3Provider(window.ethereum)
     const signer = provider.getSigner()
-    console.log(`signer: ${await signer.getAddress()}`)
 
     const contract = new ethers.Contract(address, abi, signer)
 
@@ -247,14 +218,15 @@ export async function getProduct(id) {
   }
 }
 
+/**
+ * Fetches all products from the blockchain.
+ */
 export async function getAllProducts() {
   try {
-    //blockchain
     const [abi, address] = await loadContract('ProductManager')
 
     const provider = new Web3Provider(window.ethereum)
     const signer = provider.getSigner()
-    console.log(`signer: ${await signer.getAddress()}`)
 
     const contract = new ethers.Contract(address, abi, signer)
 
@@ -269,24 +241,26 @@ export async function getAllProducts() {
   }
 }
 
-// TODO crere un file per l'interazione unicamente con mongo?
+// Get all products from MongoDb
 export async function getAllDbProducts() {
   try {
     let response = await axios.get(`${ENDPOINT_URL}/product/all`)
-    console.log(response.data)
-
     return response.data.products
-  } catch (error) {
+  } catch (error) { 
     console.log(error)
   }
 }
 
+/**
+ * Creates a new product lot on the blockchain and adds it to the manufacturer's inventory.
+ * 
+ * @param {Object} lotDetails - Details of the product lot.
+ * @returns {Promise<void>} A promise that resolves when the transactions are complited.
+ */
 export async function createProductLot(lotDetails) {
   try {
     //generate numerical hash based on dpp fields
-    console.log(lotDetails)
     const lotId = generateIdFromObject(lotDetails)
-    console.log(lotId)
 
     // Recupero ABI e address del contratto del prodotto
     const [productAbi, productAddress] = await loadContract('ProductManager')
@@ -296,7 +270,6 @@ export async function createProductLot(lotDetails) {
 
     const productContract = new ethers.Contract(productAddress, productAbi, signer)
     const tx = await productContract.createLot(lotId, String(Math.floor(Date.now() / 1000)), String(lotDetails.expirationDate), BigInt(lotDetails.totalQuantity), BigInt(lotDetails.unitPrice), BigInt(lotDetails.productId))
-    console.log(`Transaction submitted: ${tx.hash}`)
     const receipt = await tx.wait()
 
     // Recupero ABI e address dell'InventoryManager
@@ -305,13 +278,20 @@ export async function createProductLot(lotDetails) {
     const inventoryContract = new ethers.Contract(inventoryAddress, inventoryAbi, signer)
     const tx2 = await inventoryContract.addToManufacturerInventory(lotId)
     const receipt2 = await tx2.wait()
-    console.log(receipt2)
+
   } catch (err) {
     console.log('Error in createProduct: ', err)
     throw err
   }
 }
 
+/**
+ * Fetches a lot from the blockchain by its ID.
+ * 
+ * @param {*} id - The ID of the lot to fetch.
+ * 
+ * @returns {Promise<any>} A promise that resolves to the lot data.
+ */
 export async function getLot(id) {
   try {
     //blockchain
@@ -323,8 +303,6 @@ export async function getLot(id) {
     const contract = new ethers.Contract(address, abi, signer)
 
     let lot = await contract.getLot(id)
-
-    // Returns only the product dpp Hashed content
     return lot
   } catch (err) {
     console.log('Error in getProduct: ', err)

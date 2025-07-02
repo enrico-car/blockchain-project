@@ -1,6 +1,10 @@
 import { BrowserProvider, Contract, formatUnits } from 'ethers'
 import { loadContract } from '@/utils/abi.config'
 
+/**
+ * Get the cashback event history from the blockchain events
+ * @returns {Array<Object>} An array of cashback event objects
+ */
 export async function getCashbackHistory() {
   try {
     const [abi, address] = await loadContract('CashbackHandler')
@@ -24,7 +28,6 @@ export async function getCashbackHistory() {
       }))
     )
 
-    console.log('Formatted history:', history)
     return history
   } catch (error) {
     console.error('Error in getCashbackHistory:', error)
@@ -32,6 +35,11 @@ export async function getCashbackHistory() {
   }
 }
 
+/**
+ * Get the transaction events from the blockchain events, filtering for events 
+ * regarding the active wallet
+ * @returns {Array<Object>} An array of Transaction event objects
+ */
 export async function getTransactionEvents() {
   try {
     const [abi, address] = await loadContract('TransactionManager')
@@ -107,7 +115,6 @@ export async function getTransactionEvents() {
       )
     })
 
-    console.log('Complete transaction event list:', filteredEvents)
     return filteredEvents
   } catch (error) {
     console.error('Error in getTransactionEvents:', error)

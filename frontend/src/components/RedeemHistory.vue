@@ -47,20 +47,17 @@ export default {
         } 
       },
       deep: true,
-      immediate: true // se vuoi che venga chiamato anche al montaggio se ci sono già dati
+      immediate: true
     }
   },
   data() {
     return {
       isOpen: false,
-      // history: [],
       loading: false,
       error: null
     }
   },
-  async mounted() {
-    // await this.fetchHistory()
-  },
+  async mounted() {},
   methods: {
     toggleList() {
       this.isOpen = !this.isOpen
@@ -69,22 +66,6 @@ export default {
       const date = new Date(dateStr)
       return date.toLocaleString()
     },
-    // async fetchHistory() {
-    //   this.loading = true
-    //   this.error = null
-    //   try {
-    //     console.log('Fetching history...')
-    //     const data = await getCashbackHistory()
-    //     await getTransactionEvents()
-    //     this.history = data
-    //     if (data.length > 0) this.isOpen = true
-    //   } catch (err) {
-    //     this.error = err.message
-    //     console.error('Fetch error:', err)
-    //   } finally {
-    //     this.loading = false
-    //   }
-    // },
   },
 }
 </script>

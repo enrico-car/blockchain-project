@@ -7,6 +7,7 @@
         Create Transaction
       </button>
     </div>
+
     <!-- Tab Navigation -->
     <div class="tab-navigation">
       <button
@@ -24,6 +25,7 @@
 
     <!-- Content Area -->
     <div class="content-area">
+
       <!-- Pending Requests Section -->
       <section v-if="activeTab === 'pending'" class="requests-section">
         <div class="requests-list">
@@ -40,12 +42,12 @@
         </div>
       </section>
 
-      <!-- My Requests Section -->
+      <!-- My transaction status -->
       <section v-if="activeTab === 'my'" class="requests-section">
         <div class="requests-list">
           <MyRequestCard v-for="request in myRequests" :key="request.id" :request="request" />
           <div v-if="myRequests.length === 0" class="empty-state">
-            <p>You haven't made any transaction yet</p>
+            <p>There are no transactions from/to me yet</p>
           </div>
         </div>
       </section>
@@ -85,7 +87,7 @@
               />
             </div>
 
-            <!-- Add the remove button for entries > 0 -->
+            <!-- Add the remove button for the first Lot details form entry -->
             <button
               v-if="index > 0"
               type="button"
@@ -97,7 +99,7 @@
             </button>
           </div>
 
-          <!-- Button for more entries -->
+          <!-- Button for adding more entries -->
           <div class="add-button-container">
             <button type="button" @click="addEntry" class="add-entry-button">+ Add another</button>
           </div>
@@ -115,16 +117,12 @@
 <script>
 import PendingRequestCard from './PendingRequestsCard.vue'
 import MyRequestCard from './MyRequestCard.vue'
-import { createProduct } from '@/services/contract.services'
 import {
   proposeTransaction,
   getIncomingTransactions,
-  getOutgoingTransactions,
   respondToTransactionRequest,
 } from '@/services/request.services'
 import { getTransactionEvents } from '@/services/events.services'
-
-// import AppFooter from './AppFooter.vue'
 
 export default {
   components: {
@@ -145,36 +143,32 @@ export default {
   },
   async mounted() {
     try {
-
       this.getIncomingTransactions()
-
       this.getMyTransactionStatus()
-
     } catch (e) {
       console.log(e)
     }
   },
   methods: {
-    // TODO modify functions with real data
     async handleApprove(from, detailsHash) {
-      // console.log("from/detailsHash", from, detailsHash)
       const index = this.pendingRequests.findIndex((req) => req.detailsHash === detailsHash)
 
-      // Approve the request
+      // Approve the transaction
       let result = await respondToTransactionRequest(from, detailsHash, true)
 
+      // If the approval completed correctly remove the item in the visualized list
       if (index !== -1) {
         this.pendingRequests.splice(index, 1)
         console.log(`Request ${detailsHash} approved`)
       }
     },
     async handleReject(from, detailsHash) {
-      // console.log("from/detailsHash", from, detailsHash)
       const index = this.pendingRequests.findIndex((req) => req.detailsHash === detailsHash)
 
-      // Approve the request
+      // Reject the transaction
       let result = await respondToTransactionRequest(from, detailsHash, false)
 
+      // If the rejection completed correctly remove the item in the visualized list
       if (index !== -1) {
         this.pendingRequests.splice(index, 1)
         console.log(`Request ${requestId} rejected`)
@@ -188,53 +182,31 @@ export default {
       this.newTransaction.to = ''
       this.newTransaction.entries = [{ lotId: '', quantities: '' }]
     },
-    // TODO rename
     addEntry() {
       this.newTransaction.entries.push({ lotId: '', quantities: '' })
     },
     removeEntry(index) {
-      // TODO controllo per evitare di imuovere la entry 0
       this.newTransaction.entries.splice(index, 1)
     },
     async submitRequest() {
       console.log('Creating transaction...')
-      console.log(this.newTransaction)
 
       try {
+        // Propose a new transasction
         const result = await proposeTransaction(this.newTransaction.to, this.newTransaction.entries)
         // If the transaction proposal went smoothly update the transaction list
         this.getMyTransactionStatus()
-
-        console.log('Transaction successful:', result)
       } catch (e) {
         console.log('Error:', e)
       }
       this.closeCreateModal()
     },
-    // TODO Spostare
-    creteProduct() {
-      console.log('Creating product...')
-      createProduct()
-    },
     async getIncomingTransactions() {
       try {
+        // Fetch incoming transaction
         const result = await getIncomingTransactions()
-
         this.pendingRequests = result
 
-        console.log('Transaction successful:', result)
-      } catch (e) {
-        console.log('Error:', e)
-      }
-    },
-    async getOutgoingTransactions() {
-      try {
-        const result = await getOutgoingTransactions()
-
-        //TODO modificare
-        // this.pendingRequests = result
-
-        console.log('Transaction successful:', result)
       } catch (e) {
         console.log('Error:', e)
       }
@@ -250,36 +222,32 @@ export default {
 
       return uniqueSet;
     },
+    // Generate the transaction history from the events in Blockchain
     async getMyTransactionStatus(){
       
+      // Get Transaction events and extract unique DetailsHashes
       const result = await getTransactionEvents()
       const unique = this.getUniqueDetailsHashes(result)
-
-      // TODO potremmo troncare le transazini avvenute prima di una certa data o prendere solo le ultime 6/7
 
       // Group events regarding the same transaction
       let final = []
       unique.forEach(element => {
         let sametransaction = result.filter(item => item.detailsHash == element);
-        // console.log(sametransaction)
-        let index = sametransaction.findIndex(item => item.type === 'RejectedTransaction');
+        let index = sametransaction.findIndex(item => item.type === 'RejectedTransaction'); // The transaction has been rejected
         if (index !== -1) {
-          // console.log('Trovato!');
           final.push(sametransaction[index])
         } else {
-          index = sametransaction.findIndex(item => item.type === 'AcceptedTransaction');
+          index = sametransaction.findIndex(item => item.type === 'AcceptedTransaction'); // The transaction has been accepted
           if (index !== -1) {
             final.push(sametransaction[index])
           } else {
-            index = sametransaction.findIndex(item => item.type === 'AddedTransaction');
-            // console.log(sametransaction[index].isFrom)
+            index = sametransaction.findIndex(item => item.type === 'AddedTransaction'); // The transaction is still in pending
             if (index !== -1 && sametransaction[index].isFrom) {
               final.push(sametransaction[index])
             }
           }
         }
       });
-      console.log(final)
       this.myRequests = final
     }
   },

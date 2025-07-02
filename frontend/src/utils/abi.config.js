@@ -14,47 +14,43 @@ export async function loadContract(name) {
   return [data.abi, data.address]
 }
 
+// Return a merge of the lot details in blockchain and the product details in the MongoDb database
 export async function processLots(lots) {
-    // Estrai gli ID dai lotti (qui lotti sono oggetti con chiavi 0,1,2,3)
-    const ids = lots.map(lot => lot[4].toString()); // converto BigInt in stringa per sicurezza
-  
-    // Leggi tutti i prodotti dal database
-    const dbProducts = await getAllDbProducts();
-  
-    // console.log("PP", dbProducts)
-    // console.log(ids)
+  // Extract all ids from lots
+  const ids = lots.map(lot => lot[4].toString());
 
-    // Filtra i prodotti dal db che hanno id negli ids estratti
-    const filteredDbProducts = dbProducts.filter(prod => ids.includes(prod.id));
-  
-    // Crea una mappa id -> prodotto per accesso veloce
-    const dbProductMap = {};
-    filteredDbProducts.forEach(prod => {
-      dbProductMap[prod.id] = prod;
-    });
-  
-    // Per ogni lotto fai il merge con il prodotto corrispondente
-    const merged = lots.map(lot => {
-      const id = lot[4].toString();
+  // Read all db products
+  const dbProducts = await getAllDbProducts();
 
-      const lotData = {
-        expireDate: lot[0],
-        quantity: parseInt(lot[7]),
-        unitPrice: (parseInt(lot[3])/100),
-        lotId: String(lot[6]),
-        id: id,
-      };
-  
-      const dbData = dbProductMap[id] || {};
-  
-      return {
-        ...lotData,
-        ...dbData
-      };
-    });
+  // Filter products from db that have id in extracted ids
+  const filteredDbProducts = dbProducts.filter(prod => ids.includes(prod.id));
 
-    // console.log("M:", merged)
-  
-    return merged;
-  }
+  // Create a map id -> product
+  const dbProductMap = {};
+  filteredDbProducts.forEach(prod => {
+    dbProductMap[prod.id] = prod;
+  });
+
+  // For every lot do a merge with the corresponding product details extracted from db
+  const merged = lots.map(lot => {
+    const id = lot[4].toString();
+
+    const lotData = {
+      expireDate: lot[0],
+      quantity: parseInt(lot[7]),
+      unitPrice: (parseInt(lot[3])/100),
+      lotId: String(lot[6]),
+      id: id,
+    };
+
+    const dbData = dbProductMap[id] || {};
+
+    return {
+      ...lotData,
+      ...dbData
+    };
+  });
+
+  return merged;
+}
   

@@ -5,7 +5,6 @@
 </template>
 
 <script>
-// import LoginCard from '@/components/LoginCard.vue'
 import AppHeader from '@/components/AppHeader.vue'
 import CashbackCard from '@/components/CashbackCard.vue'
 

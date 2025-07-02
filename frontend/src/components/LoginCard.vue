@@ -2,12 +2,12 @@
   <div class="login-card">
     <div class="login-header">
       <div class="logo-section">
-        <!-- <div class="logo-icon"></div> -->
         <h1 class="app-title">PharmaChain</h1>
       </div>
     </div>
 
     <div class="login-content">
+
       <!-- Error Message -->
       <div v-if="error" class="error-message">
         <span class="error-icon">⚠️</span>
@@ -28,7 +28,6 @@
 
       <!-- Login Actions -->
       <div class="login-actions">
-        <!-- MetaMask Login Button -->
         <button
           @click="connectWithMetaMask"
           :disabled="!isMetaMaskAvailable || isConnecting"
@@ -38,9 +37,9 @@
           <div class="button-content">
             <div class="metamask-icon">🦊</div>
             <div class="button-text">
-              <span v-if="isConnecting">Connessione...</span>
-              <span v-else-if="isMetaMaskAvailable">Accedi con MetaMask</span>
-              <span v-else>MetaMask non disponibile</span>
+              <span v-if="isConnecting">Connecting...</span>
+              <span v-else-if="isMetaMaskAvailable">Login with MetaMask</span>
+              <span v-else>MetaMask not available</span>
             </div>
           </div>
           <div v-if="isConnecting" class="loading-spinner"></div>
@@ -49,8 +48,7 @@
         <!-- Download MetaMask Button -->
         <button v-if="!isMetaMaskAvailable" @click="downloadMetaMask" class="download-button">
           <div class="button-content">
-            <!-- <span class="download-icon"></span> -->
-            <span class="button-text">Scarica MetaMask</span>
+            <span class="button-text">Download MetaMask</span>
           </div>
         </button>
       </div>
@@ -59,8 +57,8 @@
 </template>
 
 <script>
-import { initialize, requestAccount } from '@/services/contract.services'
 import { useRouter } from 'vue-router'
+import { BrowserProvider } from 'ethers'
 
 export default {
   name: 'MetaMaskConnect',
@@ -87,7 +85,7 @@ export default {
     },
     async connectWithMetaMask() {
       if (!this.isMetaMaskAvailable) {
-        this.error = "MetaMask non è installato. Installa l'estensione prima di procedere."
+        this.error = "MetaMask is not installed. Please install the extension before proceeding."
         return
       }
 
@@ -95,27 +93,29 @@ export default {
       this.error = ''
 
       try {
-        // TODO probably a change is needed
-        await initialize()
+        if (typeof window.ethereum !== 'undefined') {
+          // Get accounts from MetaMask
+          const provider = new BrowserProvider(window.ethereum)
+          const accounts = await provider.send('eth_requestAccounts', [])
+          this.account = accounts[0]
 
-        this.account = await requestAccount()
-        console.log(this.account)
+          if (this.account.length > 0) {
+            console.log('MetaMask connected:', this.account)
 
-        if (this.account.length > 0) {
-          console.log('MetaMask connected:', this.account)
-
-          // TODO add backend call for autentication and select right method for pass params
-          this.router.push({ name: 'Home', params: { account: this.account } })
-        } else {
-          this.error = 'Account not found'
+            // TODO add backend call for autentication and select right method for pass params
+            this.router.push({ name: 'Home', params: { account: this.account } })
+          } else {
+            this.error = 'Account not found'
+          }
         }
       } catch (err) {
-        this.error = 'Errore durante la connessione a MetaMask.'
+        this.error = 'Error while connecting to MetaMask.'
         console.error('MetaMask connection error:', err)
       } finally {
         this.isConnecting = false
       }
     },
+    // Link to MetaMask download page
     downloadMetaMask() {
       window.open('https://metamask.io/download/', '_blank')
     },

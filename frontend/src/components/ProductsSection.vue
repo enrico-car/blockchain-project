@@ -1,7 +1,6 @@
 <template>
   <div class="products-page-wrapper">
     <div class="products-page">
-      <!-- Page Header -->
       <div class="page-header">
         <div class="header-content">
           <div class="title-section">
@@ -21,7 +20,7 @@
         </div>
       </div>
 
-      <!-- Search and Filters -->
+      <!-- Search -->
       <div class="search-section">
         <div class="search-container">
           <div class="search-input-wrapper">
@@ -57,9 +56,8 @@
 </template>
 
 <script>
-import { getAllDbProducts, getAllProducts, getLot, getProduct } from '@/services/product.services'
+import { getLot } from '@/services/product.services'
 import ProductCard from './ProductCard.vue'
-import defaultImage from '@/assets/logo.svg'
 import { getInventory } from '@/services/inventory.services'
 import { processLots } from '@/utils/abi.config'
 import { registerSaleToCustomer } from '@/services/request.services'
@@ -78,6 +76,7 @@ export default {
     this.getProducts()
   },
   computed: {
+    // Filter product in accord with the search-bar input
     filteredProducts() {
       let filtered = this.products
 
@@ -87,6 +86,7 @@ export default {
       }
       return filtered
     },
+    // Update stats
     productStats() {
       const total = this.products.length
       const available = this.products.filter((p) => p.quantity > 0).length
@@ -100,43 +100,41 @@ export default {
     },
     async sell(item) {
       console.log('Selling...')
+
+      // Call the contract to register the sell
       let result = await registerSaleToCustomer([item.id], [item.amount])
+
+      // If the previous call doesn't fail update the visualization
       let product = this.products.find((p) => p.lotId === item.id)
       product.quantity = parseInt(product.quantity) - parseInt(item.amount)
 
       alert("Sold " + item.amount + " " + product.productIdentification)
     },
     async getProducts() {
-      // console.log(await getAllProducts())
-      // console.log(await getAllDbProducts())
-      // Call the db to display the product info
-      // this.products = await getAllDbProducts()
-      // console.log(await getInventory())
+
+      // Get user inventory
       let { lotIds, quantities } = await getInventory();
       let ids = lotIds;
 
+      // Return if the inventory is empty
       if (ids.length === 0) {
         return;
       }
 
-      console.log(ids);
-
+      // Fetch all lots details on-chain
       const results = await Promise.all(
         ids.map(async (element, index) => {
           const lot = await getLot(element);
           return {
-            ...lot,           // proprietà originali del lot
-            6: element,   // aggiungi l'id
-            7: quantities[index], // aggiungi la quantità corrispondente
+            ...lot,
+            6: element,
+            7: quantities[index],
           };
         })
       );
-
-      console.log("resulto: ", results)
       
-      // console.log(await processLots(results))
+      // Merge on-chain details with server infos
       this.products = await processLots(results)
-
     },
   },
 }

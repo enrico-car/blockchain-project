@@ -4,8 +4,11 @@
       <img :src="product.image" :alt="product.name" class="product-image" loading="lazy" />
     </div>
 
+    <!-- Lot info -->
     <div class="product-info">
       <h3 class="product-name">{{ product.productIdentification }}</h3>
+
+      <!-- Lot ID container -->
       <div class="product-id-container">
         <span class="product-id-label">Lot ID:</span>
         <span class="product-id-value" :title="product.id">{{ shortId(product.lotId) }}</span>
@@ -27,7 +30,7 @@
         </div>
       </div>
       
-      <!--  -->
+      <!-- Menu for visualize all dpp info -->
       <div v-if="showModal" class="modal-overlay">
         <div class="modal-content">
           <button class="modal-close" @click="showModal = false">×</button>
@@ -42,6 +45,7 @@
         </div>
       </div>
 
+      <!-- Product Sell controls -->
       <div class="sell-control">
         <button class="more-info-button" @click="showModal = true">More info...</button>
         <div class="input-group">
@@ -95,9 +99,9 @@ export default {
   methods: {
     shortId(id) {
       if (!id) return ''
-        // Mostra i primi 4 e gli ultimi 4 caratteri (es: "abcd...1234")
         return id.length > 18 ? `${id.slice(0,9)}...${id.slice(-3)}` : id
     },
+    // Copy the Lot ID in the clipboard
     copyId() {
       navigator.clipboard.writeText(this.product.lotId).then(() => {
         this.copied = true
@@ -105,15 +109,14 @@ export default {
           this.copied = false
         }, 1200) 
       }).catch(() => {
-        console.error('Errore durante la copia')
+        console.error('Error during copy')
       })
     },
     sell() {
       if (this.sellAmount > 0 && this.sellAmount <= this.product.quantity) {
-        // TODO Logica per vendere da gestire nel padre, non possiamo modificare il prop da qui
+        
+        // Emit sell event that will be catched by the parent component (ProductSection)
         this.$emit('sell', { id: this.product.lotId, amount: this.sellAmount })
-
-        // Reset
         this.sellAmount = 0
       } else {
         alert('Invalid amount')

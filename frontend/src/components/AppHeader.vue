@@ -3,7 +3,6 @@
     <div class="header-container">
       <div class="header-left">
         <div class="logo-section">
-          <!-- <span class="logo-icon"></span> -->
           <span class="app-name">PharmaChain</span>
         </div>
       </div>
@@ -11,19 +10,15 @@
       <div class="header-center">
         <nav v-if="connectedAccount" class="main-navigation">
           <router-link :to="`/home/${connectedAccount}`" class="nav-link">
-            <!-- <span class="nav-icon"></span> -->
             Home
           </router-link>
           <router-link :to="`/inventory/${connectedAccount}`" class="nav-link">
-            <!-- <span class="nav-icon"></span> -->
             Inventory
           </router-link>
           <router-link :to="`/cashback/${connectedAccount}`" class="nav-link">
-            <!-- <span class="nav-icon"></span> -->
             Cashback
           </router-link>
           <router-link :to="`/manufacturer/${connectedAccount}`" class="nav-link">
-            <!-- <span class="nav-icon"></span> -->
             Manufacturer
           </router-link>
         </nav>
@@ -64,6 +59,7 @@ export default {
     }
   },
   methods: {
+    // Check Metamask account availability, redirect to login if no wallet found
     async checkConnectedAccount() {
       if (typeof window.ethereum !== 'undefined') {
         try {
@@ -81,6 +77,7 @@ export default {
         }
       }
     },
+    // Shortens the wallet address for a better visualization
     formatAddress(address) {
       if (!address) return ''
       return `${address.slice(0, 6)}...${address.slice(-4)}`
@@ -100,6 +97,7 @@ export default {
   mounted() {
     this.checkConnectedAccount()
 
+    // Reload the page if the Metamsk's accountChanged event is recorder
     if (window.ethereum) {
       window.ethereum.on('accountsChanged', (accounts) => {
         if (accounts.length > 0) {
@@ -115,29 +113,6 @@ export default {
     }
   },
 }
-
-// TODO spostare la parte relativa alla gestione dei wallet su un file apposito
-// try {
-//   window.ethereum.on('accountsChanged', (accounts) => {
-//     if (accounts.length > 0) {
-//       this.connectedAccount = accounts[0];
-
-//       // Se NON siamo sulla pagina di login, ricarichiamo
-//       if (this.$route.path !== '/login') {
-//         window.location.reload(); // ricarica la pagina
-//       } else {
-//         // Se siamo sulla pagina di login, niente reload
-//         console.log('Account changed while on login page');
-//       }
-//     } else {
-//       // Nessun account connesso → redirect a login
-//       this.connectedAccount = '';
-//       this.$router.push('/login');
-//     }
-//   });
-// } catch (error) {
-//   console.log(error)
-// }
 </script>
 
 <style scoped>

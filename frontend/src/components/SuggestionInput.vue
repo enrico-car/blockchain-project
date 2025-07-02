@@ -88,7 +88,6 @@ export default {
 <style scoped>
 .autocomplete {
   position: relative;
-  /* max-width: 400px; */
   width: 100%;
 }
 

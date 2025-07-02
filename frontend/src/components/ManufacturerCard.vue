@@ -8,11 +8,14 @@
       </div>
       <div class="header-card">
         <div class="button-box">
+
+          <!-- Create New Product button -->
           <button @click="showCreateProduct" class="create-button">
             <span class="plus-icon">+</span>
             Create Product
           </button>
 
+          <!-- Create New Lot button -->
           <button @click="showCreateLot" class="create-button">
             <span class="plus-icon">+</span>
             Create Lot
@@ -21,6 +24,7 @@
       </div>
     </div>
 
+    <!-- Cashback section -->
     <div class="create-card">
       <div class="card-title">
         <h1>Cashback</h1>
@@ -28,7 +32,7 @@
       <MultiplierCard></MultiplierCard>
     </div>
 
-    <!-- Create New Product -->
+    <!-- Create New Product Popup Form -->
     <div v-if="createProduct" class="modal-overlay" @click="closeCreateProduct">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
@@ -215,7 +219,7 @@
     </div>
   </div>
 
-  <!-- Create New Lot -->
+  <!-- Create New Lot Popup Form -->
   <div v-if="createLot" class="modal-overlay" @click="closeCreateLot">
     <div class="modal-content" @click.stop>
       <div class="modal-header">
@@ -223,11 +227,13 @@
         <button @click="closeCreateLot" class="close-button">&times;</button>
       </div>
       <form @submit.prevent="submitLotRequest" class="modal-form">
-        <!-- Autocomplete menu -->
+
+        <!-- Suggestion Input -->
         <div class="form-group">
           <label>Product</label>
           <SuggestionInput v-model="newLot.productId" :suggestions="products"></SuggestionInput>
         </div>
+
         <div class="form-group">
           <label for="expirationDate">Expiration Date</label>
           <input
@@ -268,13 +274,9 @@
 </template>
 
 <script>
-// TODO implementare una lista di prodotti collegata al database, in modo da poter far vedere i possibili prodotti in modo visivo
 import {
   createProduct,
-  removeProduct,
-  getProduct,
   getAllDbProducts,
-  getAllProducts,
   createProductLot,
   base64DataUrlToFile,
 } from '@/services/product.services'
@@ -317,23 +319,18 @@ export default {
       },
       defaultImage: defaultImage,
       imagePreview: defaultImage,
-      products: ['Product 1', 'Product 2', 'Product 3', 'Product 4'],
+      products: [],
     }
   },
-  async mounted() {
-    // TODO non riesco a vedere idati del prodotto dalla blockchain
-    // this.getProducts()
-  },
+  async mounted() {},
   methods: {
-    creteProduct() {
-      console.log('Creating product...')
-      //   createProduct()
-    },
     showCreateProduct() {
       this.createProduct = true
     },
     showCreateLot() {
       this.createLot = true
+
+      // Get product list for the suggestion item
       this.getProducts()
     },
     closeCreateProduct() {
@@ -369,38 +366,38 @@ export default {
       this.newLot.unitPrice = ''
     },
     async getProducts() {
+
+      // Get all the product from the database
       let products = await getAllDbProducts()
       products = products.map((product) => ({
         id: product.id,
         name: product.productIdentification,
       }))
+      // Save the products list to be used in the suggestion item
       this.products = products
-      console.log(products)
     },
     async submitProductRequest() {
       console.log('Creating new product...')
-      console.log('Name: ', this.newProduct.productIdentification, 'Material: ', this.newProduct.materials)
       
+      // Prepare the dpp structure and convert the image in the right format if apresent, use a default one if not
       let dpp = {
         ...this.newProduct,
         image: this.newProduct.image ? this.newProduct.image : base64DataUrlToFile("data:image/svg+xml;base64," + btoa(decodeURIComponent(defaultImage.split(',')[1])), "default.img"),
       }
 
-      console.log(dpp)
-
+      // Call the contract for product creation
       let result = await createProduct(dpp)
-      
       this.closeCreateProduct()
     },
     async submitLotRequest() {
       console.log('Creating new lot...')
-      console.log("new lot: ", this.newLot)
 
-      // Manage float input from 12.555 to 1255
+      // Manage float input format, es. from 12.555 to 1255
       let temp = { ...this.newLot };
       temp.unitPrice = (parseFloat(this.newLot.unitPrice.replace(",",".")).toFixed(2))*100
 
-      console.log(await createProductLot(temp))
+      // Call the contract for lot creation
+      await createProductLot(temp)
       this.closeCreateLot()
     },
     handleImageUpload(event) {

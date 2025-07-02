@@ -1,5 +1,7 @@
 <template>
   <div class="row-multiplier">
+
+    <!-- Multiplier Visualization -->
     <div class="left-part">
       <div class="counter-section">
         <div class="stat-card">
@@ -9,6 +11,8 @@
       </div>
     </div>
     <div class="separetor"></div>
+
+    <!-- Multiplier chainging form -->
     <div class="right-part">
       <h1 class="multiplier-title">Change Cashback multiplier</h1>
       <form @submit.prevent="submitChangeRequest" class="redeem-form">
@@ -51,14 +55,13 @@ export default {
   },
   methods: {
     async submitChangeRequest() {
-      //blockchain request
       if(await setRewardMultiplier(this.multiplierAmount)){
-        //cashback request ok
+        // Cashback request ok
         this.multiplierMessage = 'Multiplier request sent successfully!'
         this.actualMultiplierAmount = await getRewardMultiplier();
         this.multiplierSuccess = true
       } else {
-        //some error
+        // Some error
         this.multiplierMessage = 'Error: it was not possible to fulfill the request!'
         this.multiplierSuccess = false
       }

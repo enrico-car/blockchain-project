@@ -3,6 +3,8 @@
     <h1 class="title">Cashback</h1>
     <div class="row-menu">
       <div class="left-part">
+
+        <!-- Token counter -->
         <div class="counter-section">
           <div class="stat-card">
             <span class="stat-number">{{ balance }}</span>
@@ -15,6 +17,7 @@
         <h1 class="redeem-title">Redeem your discounts</h1>
         <form @submit.prevent="submitLotRequest" class="redeem-form">
           <button type="submit" class="submit-button">Redeem now</button>
+
           <!-- Reddem status -->
           <transition name="fade">
             <div class="redeem-border" v-if="redeemMessage">
@@ -27,6 +30,7 @@
       </div>
     </div>
 
+    <!-- Reddem History -->
     <RedeemHistory :history="redeemHistoryData"></RedeemHistory>
   </div>
 </template>
@@ -34,7 +38,7 @@
 <script>
 import RedeemHistory from './RedeemHistory.vue'
 import { redeemCashback, getTokenBalance } from '@/services/cashback.services'
-import { getCashbackHistory, getTransactionEvents } from '@/services/events.services.js'
+import { getCashbackHistory } from '@/services/events.services.js'
 
 export default {
   name: 'CashbackCard',
@@ -56,24 +60,25 @@ export default {
     }
   },
   async mounted(){
+    // Get token balance
     this.balance = await getTokenBalance();
     
+    // Fetch redeem history
     this.fetchHistory();
   },
   methods: {
     async submitLotRequest() {
-      //blockchain request
       if(await redeemCashback()){
         //cashback request ok
         this.redeemMessage = 'Redeem request sent successfully!'
         this.redeemSuccess = true
 
-        // Ffetch the new balance fron the CashbackHandler contract
+        // Fetch the new balance and updated history
         this.balance = await getTokenBalance();
         this.fetchHistory();
 
       } else {
-        //some error
+        // Error during cashback redemption
         this.redeemMessage = 'Error: it was not possible to fulfill the request!'
         this.redeemSuccess = false
       }
@@ -81,7 +86,7 @@ export default {
       // Reset timeout if already active
       if (this.messageTimeout) clearTimeout(this.messageTimeout)
 
-      // Auto-hide message after 3 seconds
+      // Auto-hide redemption message after 3 seconds
       this.messageTimeout = setTimeout(() => {
         this.redeemMessage = ''
         this.redeemSuccess = null
@@ -94,9 +99,7 @@ export default {
       try {
         console.log('Fetching history...')
         const data = await getCashbackHistory()
-
         this.redeemHistoryData = data
-        console.log(this.redeemHistoryData)
       } catch (err) {
         this.error = err.message
         console.error('Fetch error:', err)
