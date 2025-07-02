@@ -39,12 +39,21 @@
 import RedeemHistory from './RedeemHistory.vue'
 import { redeemCashback, getTokenBalance } from '@/services/cashback.services'
 import { getCashbackHistory } from '@/services/events.services.js'
+import { useToaster } from '@/composables/useToaster';
 
 export default {
   name: 'CashbackCard',
   props: {},
   components: {
     RedeemHistory,
+  },
+  setup(){
+    const { showSuccess, showError } = useToaster();
+
+    return {
+      showSuccess,
+      showError
+    };
   },
   data() {
     return {
@@ -61,10 +70,14 @@ export default {
   },
   async mounted(){
     // Get token balance
-    this.balance = await getTokenBalance();
-    
-    // Fetch redeem history
-    this.fetchHistory();
+    try{
+      this.balance = await getTokenBalance();
+      
+      // Fetch redeem history
+      this.fetchHistory();
+    }catch(e){
+      this.showError("Error while obtaining cashback balance");
+    }
   },
   methods: {
     async submitLotRequest() {
@@ -93,7 +106,11 @@ export default {
       }, 3000)
     },
     async getTokenBalance(){
-      return await getTokenBalance();
+      let balance = await getTokenBalance();
+
+      if(balance < 0) this.showError("Error token balance", "It was not possible to obtain the balance");
+
+      return balance;
     },
     async fetchHistory() {
       try {
@@ -103,6 +120,7 @@ export default {
       } catch (err) {
         this.error = err.message
         console.error('Fetch error:', err)
+        this.showError("Erorr redeem history", "It was not possible to obtain the history");
       } finally {
         this.loading = false
       }

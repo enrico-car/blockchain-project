@@ -239,7 +239,7 @@
           <input
             id="expirationDate"
             v-model="newLot.expirationDate"
-            type="text"
+            type="date"
             placeholder="Enter expiration date"
             required
           />
@@ -283,11 +283,20 @@ import {
 import defaultImage from '@/assets/logo.svg'
 import SuggestionInput from './SuggestionInput.vue'
 import MultiplierCard from './MultiplierCard.vue'
+import { useToaster } from '@/composables/useToaster';
 
 export default {
   components: {
     SuggestionInput,
     MultiplierCard,
+  },
+  setup(){
+    const { showSuccess, showError } = useToaster();
+
+    return {
+      showSuccess,
+      showError
+    };
   },
   data() {
     return {
@@ -386,7 +395,13 @@ export default {
       }
 
       // Call the contract for product creation
-      let result = await createProduct(dpp)
+      try{
+        await createProduct(dpp)
+        this.showSuccess("Product created!", "");
+      }catch(e){
+        this.showError("Product creation aborted!", "");
+      }
+      
       this.closeCreateProduct()
     },
     async submitLotRequest() {
@@ -397,7 +412,12 @@ export default {
       temp.unitPrice = (parseFloat(this.newLot.unitPrice.replace(",",".")).toFixed(2))*100
 
       // Call the contract for lot creation
-      await createProductLot(temp)
+      try{
+        await createProductLot(temp)
+        this.showSuccess("Lot created!", "");
+      }catch(e){
+        this.showError("Lot creation aborted!", "");
+      }
       this.closeCreateLot()
     },
     handleImageUpload(event) {

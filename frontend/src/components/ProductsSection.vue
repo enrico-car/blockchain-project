@@ -61,6 +61,7 @@ import ProductCard from './ProductCard.vue'
 import { getInventory } from '@/services/inventory.services'
 import { processLots } from '@/utils/abi.config'
 import { registerSaleToCustomer } from '@/services/request.services'
+import { useToaster } from '@/composables/useToaster';
 
 export default {
   components: {
@@ -71,6 +72,14 @@ export default {
       products: [],
       searchQuery: '',
     }
+  },
+  setup(){
+    const { showSuccess, showError } = useToaster();
+
+    return {
+      showSuccess,
+      showError
+    };
   },
   mounted() {
     this.getProducts()
@@ -102,39 +111,46 @@ export default {
       console.log('Selling...')
 
       // Call the contract to register the sell
-      let result = await registerSaleToCustomer([item.id], [item.amount])
+      try{
+        await registerSaleToCustomer([item.id], [item.amount])
 
-      // If the previous call doesn't fail update the visualization
-      let product = this.products.find((p) => p.lotId === item.id)
-      product.quantity = parseInt(product.quantity) - parseInt(item.amount)
-
-      alert("Sold " + item.amount + " " + product.productIdentification)
+        // If the previous call doesn't fail update the visualization
+        let product = this.products.find((p) => p.lotId === item.id)
+        product.quantity = parseInt(product.quantity) - parseInt(item.amount)
+        this.showSuccess("Product sold!", "Sold " + item.amount + " of " + product.productIdentification);
+      }catch(e){
+        this.showError("Not possible to sell the product");
+      }
     },
     async getProducts() {
 
       // Get user inventory
-      let { lotIds, quantities } = await getInventory();
-      let ids = lotIds;
+      try{
+        let { lotIds, quantities } = await getInventory();
+        let ids = lotIds;
 
-      // Return if the inventory is empty
-      if (ids.length === 0) {
-        return;
+        // Return if the inventory is empty
+        if (ids.length === 0) {
+          return;
+        }
+
+        // Fetch all lots details on-chain
+        const results = await Promise.all(
+          ids.map(async (element, index) => {
+            const lot = await getLot(element);
+            return {
+              ...lot,
+              6: element,
+              7: quantities[index],
+            };
+          })
+        );
+        
+        // Merge on-chain details with server infos
+        this.products = await processLots(results)
+      }catch(e){
+        this.showError("Erorr while obtaining the inventory");
       }
-
-      // Fetch all lots details on-chain
-      const results = await Promise.all(
-        ids.map(async (element, index) => {
-          const lot = await getLot(element);
-          return {
-            ...lot,
-            6: element,
-            7: quantities[index],
-          };
-        })
-      );
-      
-      // Merge on-chain details with server infos
-      this.products = await processLots(results)
     },
   },
 }

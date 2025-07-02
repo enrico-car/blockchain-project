@@ -64,12 +64,22 @@
 </template>
 
 <script>
+import { useToaster } from '@/composables/useToaster';
+
 export default {
   props: {
     product: {
       type: Object,
       required: true,
     },
+  },
+  setup(){
+    const { showSuccess, showError } = useToaster();
+
+    return {
+      showSuccess,
+      showError
+    };
   },
   emits: ['sell'],
   data() {
@@ -109,7 +119,7 @@ export default {
           this.copied = false
         }, 1200) 
       }).catch(() => {
-        console.error('Error during copy')
+        this.showError("Error during copy");
       })
     },
     sell() {
@@ -119,7 +129,7 @@ export default {
         this.$emit('sell', { id: this.product.lotId, amount: this.sellAmount })
         this.sellAmount = 0
       } else {
-        alert('Invalid amount')
+        this.showError("Invalid amount");
       }
     },
     formatLabel(key) {

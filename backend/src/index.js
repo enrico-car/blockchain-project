@@ -47,7 +47,7 @@ http.createServer(app).listen(port, async () => {
 
   //automatically call a smart contract function to remove
   //expired transactions
-  callEveryXSeconds(removeExpiredTransactions, 5 * 60 * 1000);
+  callEveryXSeconds(removeExpiredTransactions, process.env.CALLBACK_EXPIPRED_TRANSACTIONS);
 
   console.log(`Server HTTP started on http://localhost:${port}`);
 });
@@ -122,7 +122,7 @@ function addWalletsToDB() {
  * that have an age larger than the one passed as a parameter.
  */
 async function removeExpiredTransactions(){
-  const maxAge = 5 * 60; //in seconds
+  const maxAge = process.env.TIMEOUT_EXPIRED_TRANSACTIONS; // in seconds
   console.log("Calling remove expired transactions");
 
   try{
@@ -151,7 +151,7 @@ function callEveryXSeconds(callback, millis) {
   if (typeof callback !== "function") {
     throw new Error("callback must be a function");
   }
-  if (typeof millis !== "number" || millis <= 0) {
+  if (millis <= 0) {
     throw new Error("millis must be a positive number");
   }
 

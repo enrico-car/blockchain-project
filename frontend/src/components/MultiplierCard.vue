@@ -76,7 +76,12 @@ export default {
       }, 3000)
     },
     async getRewardMultiplier(){
-      return await getRewardMultiplier();
+      let multiplier = await getRewardMultiplier();
+
+      if(multiplier < 0) this.showError("Error reward multiplier", "It was not possible to obtain the reward multiplier");
+
+      return multiplier;
+
     }
   },
 }

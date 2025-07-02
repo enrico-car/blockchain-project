@@ -123,11 +123,20 @@ import {
   respondToTransactionRequest,
 } from '@/services/request.services'
 import { getTransactionEvents } from '@/services/events.services'
+import { useToaster } from '@/composables/useToaster';
 
 export default {
   components: {
     PendingRequestCard,
     MyRequestCard,
+  },
+  setup(){
+    const { showSuccess, showError } = useToaster();
+
+    return {
+      showSuccess,
+      showError
+    };
   },
   data() {
     return {
@@ -154,24 +163,32 @@ export default {
       const index = this.pendingRequests.findIndex((req) => req.detailsHash === detailsHash)
 
       // Approve the transaction
-      let result = await respondToTransactionRequest(from, detailsHash, true)
+      try{
+        await respondToTransactionRequest(from, detailsHash, true)
 
-      // If the approval completed correctly remove the item in the visualized list
-      if (index !== -1) {
-        this.pendingRequests.splice(index, 1)
-        console.log(`Request ${detailsHash} approved`)
+        // If the approval completed correctly remove the item in the visualized list
+        if (index !== -1) {
+          this.pendingRequests.splice(index, 1)
+          this.showSuccess(`Request ${detailsHash} approved`);
+        }
+      }catch(e){
+        this.showError("Error while approving request");
       }
     },
     async handleReject(from, detailsHash) {
       const index = this.pendingRequests.findIndex((req) => req.detailsHash === detailsHash)
 
       // Reject the transaction
-      let result = await respondToTransactionRequest(from, detailsHash, false)
+      try{
+        await respondToTransactionRequest(from, detailsHash, false)
 
-      // If the rejection completed correctly remove the item in the visualized list
-      if (index !== -1) {
-        this.pendingRequests.splice(index, 1)
-        console.log(`Request ${requestId} rejected`)
+        // If the rejection completed correctly remove the item in the visualized list
+        if (index !== -1) {
+          this.pendingRequests.splice(index, 1)
+          this.showSuccess(`Request ${detailsHash} rejected`);
+        }
+      }catch(e){
+        this.showError("Error while rejecting request");
       }
     },
     openCreateModal() {
@@ -193,10 +210,12 @@ export default {
 
       try {
         // Propose a new transasction
-        const result = await proposeTransaction(this.newTransaction.to, this.newTransaction.entries)
+        await proposeTransaction(this.newTransaction.to, this.newTransaction.entries)
         // If the transaction proposal went smoothly update the transaction list
         this.getMyTransactionStatus()
+        this.showSuccess("Propose of transaction successful");
       } catch (e) {
+        this.showError("Erorr while proposing transaction");
         console.log('Error:', e)
       }
       this.closeCreateModal()
@@ -208,6 +227,7 @@ export default {
         this.pendingRequests = result
 
       } catch (e) {
+        this.showError("Error with incoming transactions", "It was not possible to obtain the incoming transactions");
         console.log('Error:', e)
       }
     },

@@ -102,7 +102,6 @@ export default {
           if (this.account.length > 0) {
             console.log('MetaMask connected:', this.account)
 
-            // TODO add backend call for autentication and select right method for pass params
             this.router.push({ name: 'Home', params: { account: this.account } })
           } else {
             this.error = 'Account not found'
