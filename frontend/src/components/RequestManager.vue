@@ -74,7 +74,16 @@
           <div v-for="(entry, index) in newTransaction.entries" :key="index" class="form-row">
             <div class="form-group half">
               <label>Lot ID</label>
-              <input v-model="entry.lotId" type="text" placeholder="Enter Lot id" required />
+              <select v-model="entry.lotId" required>
+                <option disabled value="">Select a Lot</option>
+                <option
+                  v-for="product in products"
+                  :key="product.lotId"
+                  :value="product.lotId"
+                >
+                  {{ formatLotId(product.lotId) }} - {{ product.productIdentification }} (Qty: {{ product.quantity }})
+                </option>
+              </select>
             </div>
             <div class="form-group half">
               <label>Qt.</label>
@@ -122,7 +131,10 @@ import {
   getIncomingTransactions,
   respondToTransactionRequest,
 } from '@/services/request.services'
+import { getLot } from '@/services/product.services'
 import { getTransactionEvents } from '@/services/events.services'
+import { getInventory } from '@/services/inventory.services'
+import { processLots } from '@/utils/abi.config'
 import { useToaster } from '@/composables/useToaster';
 
 export default {
@@ -148,12 +160,14 @@ export default {
         to: '',
         entries: [{ lotId: '', quantities: '' }],
       },
+      products: [],
     }
   },
   async mounted() {
     try {
       this.getIncomingTransactions()
       this.getMyTransactionStatus()
+      this.getProducts();
     } catch (e) {
       console.log(e)
     }
@@ -241,6 +255,41 @@ export default {
       });
 
       return uniqueSet;
+    },
+    formatLotId(lotId) {
+      if (!lotId) return '';
+      return `${lotId.slice(0, 4)}...${lotId.slice(-4)}`;
+    },
+    async getProducts() {
+
+      // Get user inventory
+      try{
+        let { lotIds, quantities } = await getInventory();
+        let ids = lotIds;
+
+        // Return if the inventory is empty
+        if (ids.length === 0) {
+          return;
+        }
+
+        // Fetch all lots details on-chain
+        const results = await Promise.all(
+          ids.map(async (element, index) => {
+            const lot = await getLot(element);
+            return {
+              ...lot,
+              6: element,
+              7: quantities[index],
+            };
+          })
+        );
+        
+        // Merge on-chain details with server infos
+        this.products = await processLots(results)
+        console.log("Products obtained: ", this.products);
+      }catch(e){
+        this.showError("Erorr while obtaining the inventory");
+      }
     },
     // Generate the transaction history from the events in Blockchain
     async getMyTransactionStatus(){

@@ -148,6 +148,7 @@ export default {
         
         // Merge on-chain details with server infos
         this.products = await processLots(results)
+        console.log("Products obtained: ", this.products);
       }catch(e){
         this.showError("Erorr while obtaining the inventory");
       }
