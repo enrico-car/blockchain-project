@@ -2,7 +2,7 @@ import { ethers } from 'ethers'
 import { Web3Provider } from '@ethersproject/providers'
 import { loadContract } from '@/utils/abi.config'
 
-const IS_CASHBACK_UPGRADED = true; 
+const IS_CASHBACK_UPGRADED = false; 
 
 //given from the cashbacktoken contract
 const MIN_CASHBACK_AMOUNT = IS_CASHBACK_UPGRADED ? ethers.parseUnits('200', 18) : ethers.parseUnits('100', 18);

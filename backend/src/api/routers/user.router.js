@@ -11,8 +11,11 @@ const User = require("../../models/User");
 const getUserInfo = async (req, res) => {
   const address = req.params.address;
 
-  const userByAddress = await User.findOne({ wallet: address });
-
+  //const userByAddress = await User.findOne({ wallet: address });
+  const userByAddress = await User.findOne({
+    wallet: new RegExp(`^${address}$`, "i"),
+  });
+  
   if (!userByAddress) {
     return res.status(404).json({ message: "No corresponding user" });
   }

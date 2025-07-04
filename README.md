@@ -92,7 +92,7 @@ When the project is running, enter the Hardhat console and upgrade the new cashb
 docker exec -it hardhat /bin/bash
 
 # in the hardhat docker console
-npc hardhat run scripts/upgrade.js --network localhost
+npx hardhat run scripts/upgrade.js --network localhost
 ```
 
 After the upgrade, in order to change the call to the new contract, modify the constant flag `IS_CASHBACK_UPGRADED` in the frontend, in the file `frontend/src/services/cashback.services.js:5` to `true`.

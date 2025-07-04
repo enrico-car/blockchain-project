@@ -25,6 +25,10 @@
       </div>
 
       <div class="header-right">
+        <div v-if="connectedAccount" class="user-type">
+          {{userType}}
+        </div>
+
         <div v-if="connectedAccount" class="user-menu">
           <button @click="toggleDropdown" class="user-button">
             <div class="metamask-avatar">🦊</div>
@@ -36,6 +40,7 @@
             <div class="account-info">
               <div class="account-label">Account connesso</div>
               <div class="account-address">{{ connectedAccount }}</div>
+              <div class="account-address">{{ realName }}</div>
             </div>
             <div class="dropdown-divider"></div>
             <button @click="logout" class="logout-button">
@@ -50,12 +55,17 @@
 </template>
 
 <script>
+import axios from 'axios'
+const ENDPOINT_URL = 'http://localhost:3000/api'
+
 export default {
   name: 'AppHeader',
   data() {
     return {
       connectedAccount: '',
       isDropdownOpen: false,
+      userType: '',
+      realName: '',
     }
   },
   methods: {
@@ -68,6 +78,7 @@ export default {
           })
           if (accounts.length > 0) {
             this.connectedAccount = accounts[0]
+            await this.getUserType();
           }else{
             // Probably the user doesn't have Metamask or is not logged
             this.$router.push('/login');
@@ -75,6 +86,17 @@ export default {
         } catch (error) {
           console.error('Error getting accounts:', error)
         }
+      }
+    },
+    async getUserType(){
+      try{
+        let response = await axios.get(`${ENDPOINT_URL}/user/info/${this.connectedAccount}`);
+        this.userType = response.data.user.type.toUpperCase();
+        this.realName = response.data.user.realName.toUpperCase();
+
+      }catch(e){
+        this.userType = 'unknown'.toUpperCase();
+        this.realName = 'unknown'.toUpperCase();
       }
     },
     // Shortens the wallet address for a better visualization
@@ -104,7 +126,6 @@ export default {
 
           this.connectedAccount = accounts[0];
           window.location.reload();
-
         } else {
           this.connectedAccount = '';
           this.$router.push('/login');
@@ -204,6 +225,16 @@ export default {
 .header-right {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+}
+
+.user-type{
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #64748b; 
+  padding: 0.5rem 1rem;
 }
 
 .user-menu {
