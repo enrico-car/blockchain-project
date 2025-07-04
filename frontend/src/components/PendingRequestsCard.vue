@@ -21,7 +21,7 @@
           </div>
           <div class="request-date">
             <span class="date-label">Date:</span>
-            <span class="date-value">{{ formatDate(request.timestamp) }}</span>
+            <span class="date-value">{{ formatDate(request.timestamp*1000) }}</span>
           </div>
         </div>
       </div>
@@ -91,11 +91,13 @@ export default {
   },
   methods: {
     formatDate(dateString) {
-      return new Date(dateString*1000).toLocaleDateString('it-IT', {
+      return new Date(dateString).toLocaleString('it-IT', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
-      })
+        hour: '2-digit',
+        minute: '2-digit'
+      });
     },
     contentString(names, qt) {
       if (!names || !qt) return '';

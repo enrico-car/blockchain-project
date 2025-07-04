@@ -6,14 +6,14 @@
       <div v-if="request.isFrom" class="requester-info">
         <span class="requester-label">To:</span>
         <span class="requester-name">{{ resolveName(request.to) }}</span>
-        <div class="transaction-type">
+        <div class="out-transaction">
           <span class="icon">⬆ Out</span>
         </div>
       </div>
       <div v-else class="requester-info">
         <span class="requester-label">From:</span>
         <span class="requester-name">{{ resolveName(request.from) }}</span>
-        <div class="transaction-type">
+        <div class="in-transaction">
           <span class="icon">⬇ In</span>
         </div>
       </div>
@@ -267,15 +267,19 @@ export default {
   /* border: 2px solid transparent; */
 }
 
-.transaction-type {
-  /* background-color: #e6f9f0; */
+.in-transaction {
   color: #2ecc71;
-  border-color: #b6f0d5;
+}
+
+.out-transaction {
+  color: #e74c3c;
 }
 
 .icon {
   display: inline-block;
   transform: translateY(-1px); /* opzionale: verticale perfetta */
 }
+
+
 
 </style>

@@ -90,6 +90,5 @@ module.exports = buildModule("DeployModule", (m) => {
     InventoryManager: inventoryManager,
     TransactionManager: transactionManager,
     ERC1967Proxy: proxy,
-    implementation: implementation,
   };
 });

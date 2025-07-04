@@ -35,7 +35,6 @@ contract CashbackToken is ERC20, Ownable {
         _mint(to, amount);
     }
 
-    // TODO: Rimuovere ?? Lasciamo la possibilità agli utenti di burnare i propri token?
     function burn(uint256 amount) external {
         _burn(msg.sender, amount);
     }
@@ -46,5 +45,3 @@ contract CashbackToken is ERC20, Ownable {
     }
 
 }
-
-// TODO: Aggiungiamo altri eventi??

@@ -139,11 +139,3 @@ contract InventoryManager is Ownable {
     fallback() external {}
 
 }
-
-/* TODO: 
-    Aggiungere controlli di sicurezza: Chi può chiamare le funzioni? Metterei solo il contratto che gestisce le transazioni 
-        + tecnici/produttore (per eventuali problemi)
-
-    ACL per hasSufficientInventory ?? Solo authorized anche qui?? 
-        Potremmo usarla per calcolare l'inventario di un'altro soggetto, rendendo vano l'onlyTransactionManager su getInventory
-*/ 

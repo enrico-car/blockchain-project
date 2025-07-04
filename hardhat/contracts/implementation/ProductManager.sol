@@ -183,8 +183,3 @@ contract ProductManager is Ownable {
     fallback() external {}
 
 }
-
-/* TODO: 
-    Controllare parte di sicurezza: Chi può chiamare le funzioni ?? Lasciamo la lettura pubblica ??  
-*/
-

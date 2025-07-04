@@ -313,11 +313,6 @@ contract TransactionManager is Ownable {
 
 }
 
-/* TODO: 
-    Event sui vari file per modifiche alle ACL
-    Proxy hardhat
-*/
-
 /*
 
     Complete Workflow:

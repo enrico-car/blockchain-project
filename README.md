@@ -8,6 +8,8 @@ This repository contains the code developed for the Blockchain course project in
 
 - [Execution](#execution)
 
+- [Upgrade Cashback Contract](#upgrade-cashback-contract)
+
 - [Authors](#authors)
 
 ## Architecture
@@ -84,11 +86,29 @@ docker compose down -v --remove-orphans
 Always `stop the containers using the command above`.\
 This ensures that all temporary volumes are properly removed. If you skip this step, leftover volumes may cause unexpected behavior the next time you start the project.
 
+## Upgrade Cashback Contract
+When the project is running, enter the Hardhat console and upgrade the new cashback contract:
+```bash
+docker exec -it hardhat /bin/bash
+
+# in the hardhat docker console
+npc hardhat run scripts/upgrade.js --network localhost
+```
+
+After the upgrade, in order to change the call to the new contract, modify the constant flag `IS_CASHBACK_UPGRADED` in the frontend, in the file `frontend/src/services/cashback.services.js:5` to `true`.
+
+This will change the call to the `cashback` contract:
+
+```js
+const handlerContract = new ethers.Contract(handlerAddress, handlerAbi, signer);
+const redeemTx = IS_CASHBACK_UPGRADED ? await handlerContract["redeemCashback(uint256)"](MIN_CASHBACK_AMOUNT,{gasPrice: 0 }) : await handlerContract["redeemCashback()"]({gasPrice: 0 });
+```
+
 ## Authors
 
 | Name              | Email                                   |
 |-------------------|-----------------------------------------|
-| Enrico Carnelos   | enrico.carnelos@studenti.unitn.it       |
-| Nicola Mores      | nicola.mores@studenti.unitn.it          |
-| Marco Roccon      | marco.roccon@studenti.unitn.it          |
 | Dorijan Di Zepp   | dorijan.dizepp@studenti.unitn.it        |
+| Enrico Carnelos   | enrico.carnelos@studenti.unitn.it       |
+| Marco Roccon      | marco.roccon@studenti.unitn.it          |
+| Nicola Mores      | nicola.mores@studenti.unitn.it          |
