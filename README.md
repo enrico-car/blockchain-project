@@ -27,6 +27,39 @@ Below is an overview of the main components required for the system to operate c
 - __Docker__\
     All components are containerized and orchestrated via `Docker Compose`, simplifying deployment and inter-service communication.
 
+## Default Wallet list
+In this project we use the twenty default wallets provided by hardhat. In the ingnition we define the role for each address according to the following table:
+
+| WalletId          | Role                                      | Permissions |
+|-------------------|-------------------------------------------|-------------|
+| 0                 | Deployer                                  | Can modify ACL and upgradable contracts |
+| 1                 | Manufacturer                              | Can create and remove Product and Lot, modify CashBack multiplier, send Transaction |
+| 2-14              | Retailer                                  | Send Transaction, Redeem CashBack |
+| 15-19             | Pharmacy                                  | Send Transaction, Redeem CashBack, Sell Product |
+
+The private keys and wallet addresses, to import them in `Metamask`, can be retrived from `Hardhat` logs:
+
+```bash
+docker logs hardhat | less
+```
+
+Output:
+```bash
+Account #0: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 (10000 ETH)
+Private Key: 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+
+Account #1: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8 (10000 ETH)
+Private Key: 0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d
+
+Account #2: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC (10000 ETH)
+Private Key: 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a
+
+...
+
+Account #19: 0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199 (10000 ETH)
+Private Key: 0xdf57089febbacf7ba0bc227dafbffa9fc08a93fdc68e1e42411a14efcf23656e
+```
+
 ## Installation
 
 ### Docker
