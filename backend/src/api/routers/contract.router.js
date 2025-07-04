@@ -23,7 +23,8 @@ const getContractInfo = async (req, res) => {
       __dirname,
       "..",
       "..",
-      "utils",
+      "..",
+      "shared",
       "abis",
       `${contractName}.json`
     );

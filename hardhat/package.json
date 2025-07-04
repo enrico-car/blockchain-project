@@ -20,6 +20,7 @@
     "web3": "^4.16.0"
   },
   "devDependencies": {
+    "@openzeppelin/hardhat-upgrades": "^3.9.0",
     "nodemon": "^3.0.2"
   }
 }

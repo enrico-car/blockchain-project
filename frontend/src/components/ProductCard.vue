@@ -20,7 +20,7 @@
           <div class="price-quantity">
             <div>
               <span class="quantity-label">Unit price: </span>
-              <span class="price-value">{{ product.unitPrice }}</span>
+              <span class="price-value">{{ product.unitPrice }} $</span>
             </div>
             <div>
               <span class="quantity-label">Quantity: </span>

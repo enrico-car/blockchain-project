@@ -4,6 +4,7 @@ import { loadContract } from '@/utils/abi.config'
 
 //given from the cashbacktoken contract
 const MIN_CASHBACK_AMOUNT = ethers.parseUnits('100', 18);
+//const MIN_CASHBACK_AMOUNT = ethers.parseUnits('200', 18);
 
 /**
  * Request the smart contract to redeem the cashback
@@ -26,7 +27,8 @@ export async function redeemCashback() {
 
     //now call redeemCashback
     const handlerContract = new ethers.Contract(handlerAddress, handlerAbi, signer);
-    const redeemTx = await handlerContract.redeemCashback({gasPrice: 0 });
+    // const redeemTx = await handlerContract["redeemCashback(uint256)"](MIN_CASHBACK_AMOUNT,{gasPrice: 0 });
+    const redeemTx = await handlerContract["redeemCashback()"]({gasPrice: 0 });
     await redeemTx.wait();
     console.log('Redeemed cashback successfully');
     return true;

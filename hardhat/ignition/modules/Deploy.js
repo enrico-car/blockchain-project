@@ -1,4 +1,5 @@
 const { buildModule } = require("@nomicfoundation/hardhat-ignition/modules");
+const { ethers, upgrades } = require("hardhat");
 
 // Il proprietario del contratto e' il primo wallet della lista
 module.exports = buildModule("DeployModule", (m) => {
@@ -18,7 +19,20 @@ module.exports = buildModule("DeployModule", (m) => {
   // Cashback token and handler
   const token = m.contract("CashbackToken");
 
-  const handler = m.contract("CashbackHandler", [token]);
+  // https://github.com/NomicFoundation/hardhat-ignition/issues/788
+  const implementation = m.contract('CashbackHandlerUpgradable');
+
+  const initData = m.encodeFunctionCall(
+    implementation,
+    'initialize',
+    [token]
+  );
+
+  const proxy = m.contract('ERC1967Proxy', [implementation, initData]);
+
+  const handler = m.contractAt('CashbackHandlerUpgradable', proxy, {
+    id: 'CashbackHandlerInstance'
+  });
 
   m.call(token, "setBurnerAuth", [handler, true]);
 
@@ -75,5 +89,7 @@ module.exports = buildModule("DeployModule", (m) => {
     ProductManager: productManager,
     InventoryManager: inventoryManager,
     TransactionManager: transactionManager,
+    ERC1967Proxy: proxy,
+    implementation: implementation,
   };
 });
